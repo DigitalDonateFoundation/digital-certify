@@ -1,2 +1,2 @@
 # Digital Certify
-Digital Rights Certification
+Digital Certify
