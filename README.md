@@ -1,2 +1,0 @@
-# digital-certify
-digital certify
