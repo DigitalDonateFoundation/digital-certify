@@ -1,0 +1,5 @@
+
+Library: CMake
+Version: 3.9.4
+License: BSD
+Website: https://cmake.org
