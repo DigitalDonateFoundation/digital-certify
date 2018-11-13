@@ -3,3 +3,18 @@ Library: CMake
 Version: 3.9.4
 License: BSD
 Website: https://cmake.org
+
+Library: BasicX
+Version: 0.5.4
+License: BSD
+Website: https://github.com/xurendong/basicx
+
+Library: Boost
+Version: 1.65.1
+License: Boost
+Website: http://www.boost.org
+
+Library: QT
+Version: 5.9.3
+License: LGPL
+Website: https://www.qt.io
