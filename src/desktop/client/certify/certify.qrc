@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/certify">
+        <file>resource/certify.ico</file>
+        <file>resource/certify.png</file>
+    </qresource>
+</RCC>
