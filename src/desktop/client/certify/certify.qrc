@@ -2,10 +2,10 @@
     <qresource prefix="/certify">
         <file>resource/certify.ico</file>
         <file>resource/certify.png</file>
-        <file>resource/action_show.ico</file>
-        <file>resource/action_hide.ico</file>
         <file>resource/action_exit.ico</file>
         <file>resource/action_about.ico</file>
         <file>resource/action_auto_start.ico</file>
+        <file>resource/action_show_tool.ico</file>
+        <file>resource/action_show_dock.ico</file>
     </qresource>
 </RCC>

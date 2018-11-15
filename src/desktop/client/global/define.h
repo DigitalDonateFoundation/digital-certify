@@ -15,7 +15,7 @@
 // 软件信息
 #define THE_APP_NAME "Certify" // 系统英文名称
 #define THE_APP_NAME_CN "数 字 认 证 客 户 端" // 系统中文名称
-#define THE_APP_VERSION "V0.1.0-Beta Build 20181113" // 系统版本号
+#define THE_APP_VERSION "V0.1.0-Beta Build 20181114" // 系统版本号
 #define THE_APP_DEVELOPER "Developed by the D.D.F." // 开发者声明
 #define THE_APP_COMPANY "Digital Donate Foundation" // 公司声明
 #define THE_APP_COPYRIGHT "Copyright 2018-2019 D.D.F. All Rights Reserved." // 版权声明
@@ -23,6 +23,9 @@
 
 #define TRAY_POP_TITLE "系统消息：" // 托盘气球型提示标题
 #define TRAY_POP_START "Certify" // 托盘气球型提示启动
+
+#define REGISTRY_KEY_ORG "D.D.F." // 注册表键值名称 - 组织
+#define REGISTRY_KEY_APP "Digital_Certify_Client" // 注册表键值名称 - 应用
 
 // 配置定义
 #define CFG_MAX_WORD_LEN 64 // 字串最大字符数

@@ -11,78 +11,96 @@
 
 #include "about_dialog.h"
 
-AboutDialog::AboutDialog( QWidget* parent )
-: QDialog( parent ) {
-	InitInterface();
-}
+namespace certify {
 
-AboutDialog::~AboutDialog() {
-}
+	AboutDialog::AboutDialog( QWidget* parent )
+	: QDialog( parent )
+	, m_widget( nullptr )
+	, m_label_app_name( nullptr )
+	, m_label_app_version( nullptr )
+	, m_label_app_icon( nullptr )
+	, m_label_app_developer( nullptr )
+	, m_label_app_company( nullptr )
+	, m_label_app_copyright( nullptr )
+	, m_button_box( nullptr )
+	, m_layout_h_1( nullptr )
+	, m_layout_h_2( nullptr )
+	, m_layout_v( nullptr )
+	, m_phs_spacer_1( nullptr )
+	, m_phs_spacer_2( nullptr )
+	, m_phs_spacer_3( nullptr ) {
+		InitInterface();
+	}
 
-void AboutDialog::InitInterface() {
-	int nWinSizeX = 390;
-	int nWinSizeY = 230;
+	AboutDialog::~AboutDialog() {
+	}
 
-	setWindowOpacity( 0.85 );
-	setFixedSize( QSize( nWinSizeX, nWinSizeY ) );
-	setWindowFlags( Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool );
+	void AboutDialog::InitInterface() {
+		int nWinSizeX = 390;
+		int nWinSizeY = 230;
 
-	m_widget = new QWidget( this );
-	m_widget->setGeometry( QRect( 0, 0, nWinSizeX, nWinSizeY ) );
-	m_widget->setStyleSheet( "background-color:white;border:1px;border-style:outset;border-color:rgb(240,130,0);" );
+		setWindowOpacity( 0.85 );
+		setFixedSize( QSize( nWinSizeX, nWinSizeY ) );
+		setWindowFlags( Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool );
 
-	QFont qFontApp;
-	qFontApp.setPointSize( 20 );
+		m_widget = new QWidget( this );
+		m_widget->setGeometry( QRect( 0, 0, nWinSizeX, nWinSizeY ) );
+		m_widget->setStyleSheet( "background-color:white;border:1px;border-style:outset;border-color:rgb(240,130,0);" );
 
-	m_label_app_name = new QLabel( QString::fromLocal8Bit( THE_APP_NAME ), m_widget );
-	m_label_app_name->setAlignment( Qt::AlignHCenter );
-	m_label_app_name->setStyleSheet( "color:rgb(128,0,0);" );
-	m_label_app_name->setFont( qFontApp );
+		QFont qFontApp;
+		qFontApp.setPointSize( 20 );
 
-	m_label_app_version = new QLabel( QString::fromLocal8Bit( THE_APP_VERSION ), m_widget );
-	m_label_app_version->setAlignment( Qt::AlignHCenter );
+		m_label_app_name = new QLabel( QString::fromLocal8Bit( THE_APP_NAME ), m_widget );
+		m_label_app_name->setAlignment( Qt::AlignHCenter );
+		m_label_app_name->setStyleSheet( "color:rgb(128,0,0);" );
+		m_label_app_name->setFont( qFontApp );
 
-	m_label_app_icon = new QLabel( m_widget );
-	m_label_app_icon->setStyleSheet( "image:url(:/certify/resource/certify.ico);" );
+		m_label_app_version = new QLabel( QString::fromLocal8Bit( THE_APP_VERSION ), m_widget );
+		m_label_app_version->setAlignment( Qt::AlignHCenter );
 
-	m_label_app_developer = new QLabel( QString::fromLocal8Bit( THE_APP_DEVELOPER ), m_widget );
-	m_label_app_developer->setAlignment( Qt::AlignHCenter );
+		m_label_app_icon = new QLabel( m_widget );
+		m_label_app_icon->setStyleSheet( "image:url(:/certify/resource/certify.ico);" );
 
-	m_label_app_company = new QLabel( QString::fromLocal8Bit( THE_APP_COMPANY ), m_widget );
-	m_label_app_company->setAlignment( Qt::AlignHCenter );
+		m_label_app_developer = new QLabel( QString::fromLocal8Bit( THE_APP_DEVELOPER ), m_widget );
+		m_label_app_developer->setAlignment( Qt::AlignHCenter );
 
-	m_label_app_copyright = new QLabel( QString::fromLocal8Bit( THE_APP_COPYRIGHT ), m_widget );
-	m_label_app_copyright->setAlignment( Qt::AlignHCenter );
+		m_label_app_company = new QLabel( QString::fromLocal8Bit( THE_APP_COMPANY ), m_widget );
+		m_label_app_company->setAlignment( Qt::AlignHCenter );
 
-	m_button_box = new QDialogButtonBox( m_widget );
-	m_button_box->setStandardButtons( QDialogButtonBox::Ok );
-	m_button_box->button( QDialogButtonBox::Ok )->setText( QString::fromLocal8Bit( "确 定" ) );
-	m_button_box->setCenterButtons( true );
+		m_label_app_copyright = new QLabel( QString::fromLocal8Bit( THE_APP_COPYRIGHT ), m_widget );
+		m_label_app_copyright->setAlignment( Qt::AlignHCenter );
 
-	m_layout_h_1 = new QHBoxLayout();
-	m_layout_h_1->setContentsMargins( -1, 10, -1, 10 );
-	m_phs_spacer_1 = new QSpacerItem( 40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
-	m_phs_spacer_2 = new QSpacerItem( 40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
-	m_layout_h_1->addItem( m_phs_spacer_1 );
-	m_layout_h_1->addWidget( m_label_app_icon, 1 );
-	m_layout_h_1->addItem( m_phs_spacer_2 );
+		m_button_box = new QDialogButtonBox( m_widget );
+		m_button_box->setStandardButtons( QDialogButtonBox::Ok );
+		m_button_box->button( QDialogButtonBox::Ok )->setText( QString::fromLocal8Bit( "确 定" ) );
+		m_button_box->setCenterButtons( true );
 
-	m_layout_h_2 = new QHBoxLayout();
-	m_layout_h_2->setContentsMargins( -1, -1, -1, -1 );
-	m_layout_h_2->addWidget( m_button_box );
+		m_layout_h_1 = new QHBoxLayout();
+		m_layout_h_1->setContentsMargins( -1, 10, -1, 10 );
+		m_phs_spacer_1 = new QSpacerItem( 40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
+		m_phs_spacer_2 = new QSpacerItem( 40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
+		m_layout_h_1->addItem( m_phs_spacer_1 );
+		m_layout_h_1->addWidget( m_label_app_icon, 1 );
+		m_layout_h_1->addItem( m_phs_spacer_2 );
 
-	m_layout_v = new QVBoxLayout();
-	m_layout_v->setContentsMargins( 50, 10, 50, 10 );
-	m_phs_spacer_3 = new QSpacerItem( 20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding );
-	m_layout_v->addWidget( m_label_app_name );
-	m_layout_v->addWidget( m_label_app_version );
-	m_layout_v->addLayout( m_layout_h_1 );
-	m_layout_v->addItem( m_phs_spacer_3 );
-	m_layout_v->addWidget( m_label_app_developer );
-	m_layout_v->addWidget( m_label_app_company );
-	m_layout_v->addWidget( m_label_app_copyright );
-	m_layout_v->addLayout( m_layout_h_2 );
-	setLayout( m_layout_v );
+		m_layout_h_2 = new QHBoxLayout();
+		m_layout_h_2->setContentsMargins( -1, -1, -1, -1 );
+		m_layout_h_2->addWidget( m_button_box );
 
-	QObject::connect( m_button_box, SIGNAL( accepted() ), this, SLOT( close() ) );
-}
+		m_layout_v = new QVBoxLayout();
+		m_layout_v->setContentsMargins( 50, 10, 50, 10 );
+		m_phs_spacer_3 = new QSpacerItem( 20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding );
+		m_layout_v->addWidget( m_label_app_name );
+		m_layout_v->addWidget( m_label_app_version );
+		m_layout_v->addLayout( m_layout_h_1 );
+		m_layout_v->addItem( m_phs_spacer_3 );
+		m_layout_v->addWidget( m_label_app_developer );
+		m_layout_v->addWidget( m_label_app_company );
+		m_layout_v->addWidget( m_label_app_copyright );
+		m_layout_v->addLayout( m_layout_h_2 );
+		setLayout( m_layout_v );
+
+		QObject::connect( m_button_box, SIGNAL( accepted() ), this, SLOT( close() ) );
+	}
+
+} // namespace certify

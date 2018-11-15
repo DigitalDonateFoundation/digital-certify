@@ -15,39 +15,43 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QWidget>
+#include <QtWidgets/QPushButton>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QDialogButtonBox>
 
 #include "global/define.h"
 
-class AboutDialog : public QDialog
-{
-	Q_OBJECT
+namespace certify {
 
-public:
-	AboutDialog( QWidget* parent = nullptr );
-	~AboutDialog();
+	class AboutDialog : public QDialog
+	{
+		Q_OBJECT
 
-public:
-	void InitInterface();
+	public:
+		AboutDialog( QWidget* parent = nullptr );
+		~AboutDialog();
 
-private:
-	QWidget* m_widget;
-	QLabel* m_label_app_name;
-	QLabel* m_label_app_version;
-	QLabel* m_label_app_icon;
-	QLabel* m_label_app_developer;
-	QLabel* m_label_app_company;
-	QLabel* m_label_app_copyright;
-	QDialogButtonBox* m_button_box;
-	QHBoxLayout* m_layout_h_1;
-	QHBoxLayout* m_layout_h_2;
-	QVBoxLayout* m_layout_v;
-	QSpacerItem* m_phs_spacer_1;
-	QSpacerItem* m_phs_spacer_2;
-	QSpacerItem* m_phs_spacer_3;
-};
+	public:
+		void InitInterface();
+
+	private:
+		QWidget* m_widget;
+		QLabel* m_label_app_name;
+		QLabel* m_label_app_version;
+		QLabel* m_label_app_icon;
+		QLabel* m_label_app_developer;
+		QLabel* m_label_app_company;
+		QLabel* m_label_app_copyright;
+		QDialogButtonBox* m_button_box;
+		QHBoxLayout* m_layout_h_1;
+		QHBoxLayout* m_layout_h_2;
+		QVBoxLayout* m_layout_v;
+		QSpacerItem* m_phs_spacer_1;
+		QSpacerItem* m_phs_spacer_2;
+		QSpacerItem* m_phs_spacer_3;
+	};
+
+} // namespace certify
 
 #endif // CERTIFY_CERTIFY_ABOUT_DIALOG_H

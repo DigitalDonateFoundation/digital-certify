@@ -13,21 +13,28 @@
 #define CERTIFY_CERTIFY_MIAN_WINDOW_H
 
 #include <QtGui/QCloseEvent>
+#include <QtGui/QKeySequence>
 #include <QtCore/QTimer>
 #include <QtCore/QDateTime>
 #include <QtCore/QSettings>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QAction>
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QTextEdit>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QDockWidget>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QSystemTrayIcon>
 
 #include <syslog/syslog.h>
 
 #include "about_dialog.h"
+#include "infos_dialog.h"
 
 namespace certify {
 
@@ -42,6 +49,10 @@ namespace certify {
 	public:
 		void CreateActions();
 		void InitInterface();
+		void ReadSettings();
+		void WriteSettings();
+		void RemoveSettings( std::string key );
+		void CloseFloatDockWidget();
 
 	public:
 		void SystemStart();
@@ -55,8 +66,13 @@ namespace certify {
 		void ShowMainWindow();
 		void HideMainWindow();
 		void TrayIconMsgClicked();
-		void TrayIconActivated( QSystemTrayIcon::ActivationReason nReason );
-		void OnActionAutoStart( bool auto_start );
+		void TrayIconActivated( QSystemTrayIcon::ActivationReason reason );
+		void OnActionAutoStart( bool start );
+		void ShowToolBar_Main( bool show );
+		void ShowDockWidget_1( bool show );
+		void ShowDockWidget_2( bool show );
+		void ShowDockWidget_3( bool show );
+		void OnActionSaveLayout( bool save );
 
 	protected:
 		void closeEvent( QCloseEvent* event );
@@ -72,12 +88,23 @@ namespace certify {
 		QMenu* m_tray_icon_menu_auto_start;
 		QSystemTrayIcon* m_tray_icon;
 
-		QAction* m_action_show;
-		QAction* m_action_hide;
 		QAction* m_action_exit;
 		QAction* m_action_about;
+		QAction* m_action_show_tool_bar_main;
+		QAction* m_action_save_layout;
 		QAction* m_action_auto_start;
+		QAction* m_action_show_dock_1;
+		QAction* m_action_show_dock_2;
+		QAction* m_action_show_dock_3;
 
+		QMenuBar* m_menu_bar;
+		QMenu* m_menu_file;
+		QMenu* m_menu_tool;
+		QMenu* m_menu_view;
+		QMenu* m_menu_view_tooler;
+		QMenu* m_menu_view_docker;
+		QMenu* m_menu_help;
+		QToolBar* m_main_tool_bar;
 		QStatusBar* m_status_bar;
 
 		QWidget* m_main_widget; // 必须，否则底部停靠栏高度会无法向下调整
@@ -86,7 +113,16 @@ namespace certify {
 		QLabel* m_label_info;
 		QLabel* m_label_time;
 
+		QTextEdit* m_text_edit_1;
+		QTextEdit* m_text_edit_2;
+		QTextEdit* m_text_edit_3;
+		QDockWidget* m_dock_widget_1;
+		QDockWidget* m_dock_widget_2;
+		QDockWidget* m_dock_widget_3;
+		std::vector<QDockWidget*> m_vec_dock_widget;
+
 		AboutDialog* m_about_dialog;
+		InfosDialog* m_infos_dialog;
 
 	private:
 		std::string m_log_cate;

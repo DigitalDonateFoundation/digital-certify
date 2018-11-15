@@ -42,8 +42,9 @@ int32_t main( int32_t argc, char* argv[] ) {
 	QApplication application( argc, argv );
 
 	certify::MainWindow* main_window = new certify::MainWindow;
+	main_window->ReadSettings(); // 读取界面属性
 	main_window->show();
-	main_window->SystemStart();
+	main_window->SystemStart(); // 初始化各模块
 
 	return application.exec();
 }
