@@ -35,6 +35,7 @@
 
 #include "about_dialog.h"
 #include "infos_dialog.h"
+#include "project_dialog.h"
 
 namespace certify {
 
@@ -72,6 +73,7 @@ namespace certify {
 		void ShowDockWidget_1( bool show );
 		void ShowDockWidget_2( bool show );
 		void ShowDockWidget_3( bool show );
+		void ShowDockWidget_Project( bool show );
 		void OnActionSaveLayout( bool save );
 
 	protected:
@@ -96,6 +98,7 @@ namespace certify {
 		QAction* m_action_show_dock_1;
 		QAction* m_action_show_dock_2;
 		QAction* m_action_show_dock_3;
+		QAction* m_action_show_dock_project;
 
 		QMenuBar* m_menu_bar;
 		QMenu* m_menu_file;
@@ -119,10 +122,12 @@ namespace certify {
 		QDockWidget* m_dock_widget_1;
 		QDockWidget* m_dock_widget_2;
 		QDockWidget* m_dock_widget_3;
+		QDockWidget* m_dock_widget_project;
 		std::vector<QDockWidget*> m_vec_dock_widget;
 
 		AboutDialog* m_about_dialog;
 		InfosDialog* m_infos_dialog;
+		ProjectDialog* m_project_dialog;
 
 	private:
 		std::string m_log_cate;

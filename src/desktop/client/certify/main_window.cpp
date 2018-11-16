@@ -37,6 +37,7 @@ namespace certify {
 	, m_action_show_dock_1( nullptr )
 	, m_action_show_dock_2( nullptr )
 	, m_action_show_dock_3( nullptr )
+	, m_action_show_dock_project( nullptr )
 	, m_menu_bar( nullptr )
 	, m_menu_file( nullptr )
 	, m_menu_tool( nullptr )
@@ -56,8 +57,10 @@ namespace certify {
 	, m_dock_widget_1( nullptr )
 	, m_dock_widget_2( nullptr )
 	, m_dock_widget_3( nullptr )
+	, m_dock_widget_project( nullptr )
 	, m_about_dialog( nullptr )
 	, m_infos_dialog( nullptr )
+	, m_project_dialog( nullptr )
 	, m_log_cate( "<WINDOW>" ) {
 		m_syslog = basicx::SysLog_S::GetInstance();
 		CreateActions();
@@ -105,6 +108,10 @@ namespace certify {
 		m_action_show_dock_3 = new QAction( this );
 		m_action_show_dock_3->setText( QString::fromLocal8Bit( "窗口-03" ) );
 		m_action_show_dock_3->setCheckable( true );
+
+		m_action_show_dock_project = new QAction( this );
+		m_action_show_dock_project->setText( QString::fromLocal8Bit( "项目列表" ) );
+		m_action_show_dock_project->setCheckable( true );
 	}
 
 	void MainWindow::InitInterface() {
@@ -195,6 +202,7 @@ namespace certify {
 		m_text_edit_1 = new QTextEdit( this );
 		m_text_edit_2 = new QTextEdit( this );
 		m_text_edit_3 = new QTextEdit( this );
+		m_project_dialog = new ProjectDialog( this );
 
 		m_dock_widget_1 = new QDockWidget( this );
 		m_dock_widget_1->setObjectName( "DockWidget_1" ); //
@@ -228,6 +236,16 @@ namespace certify {
 
 		tabifyDockWidget( m_dock_widget_2, m_dock_widget_3 );
 
+		m_dock_widget_project = new QDockWidget( this );
+		m_dock_widget_project->setObjectName( "DockWidget_Project" ); //
+		m_dock_widget_project->setContentsMargins( -1, -1, -1, -1 );
+		m_dock_widget_project->setWindowTitle( QString::fromLocal8Bit( "项目列表" ) );
+		m_dock_widget_project->setWidget( m_project_dialog );
+		m_dock_widget_project->setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+		m_dock_widget_project->installEventFilter( this ); // 监视其关闭事件
+		addDockWidget( Qt::LeftDockWidgetArea, m_dock_widget_project );
+		m_vec_dock_widget.push_back( m_dock_widget_project );
+
 		m_action_show_tool_bar_main->setChecked( true );
 		m_action_show_dock_1->setChecked( true );
 		m_action_show_dock_2->setChecked( true );
@@ -241,6 +259,7 @@ namespace certify {
 		QObject::connect( m_action_show_dock_1, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_1( bool ) ) );
 		QObject::connect( m_action_show_dock_2, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_2( bool ) ) );
 		QObject::connect( m_action_show_dock_3, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_3( bool ) ) );
+		QObject::connect( m_action_show_dock_project, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_Project( bool ) ) );
 		QObject::connect( m_action_save_layout, SIGNAL( triggered( bool ) ), this, SLOT( OnActionSaveLayout( bool ) ) );
 		QObject::connect( m_action_auto_start, SIGNAL( triggered( bool ) ), this, SLOT( OnActionAutoStart( bool ) ) );
 	}
@@ -265,6 +284,7 @@ namespace certify {
 			m_action_show_dock_1->setChecked( settings.value( "ActionShowDock_1" ).toBool() );
 			m_action_show_dock_2->setChecked( settings.value( "ActionShowDock_2" ).toBool() );
 			m_action_show_dock_3->setChecked( settings.value( "ActionShowDock_3" ).toBool() );
+			m_action_show_dock_project->setChecked( settings.value( "ActionShowDock_Project" ).toBool() );
 
 			m_action_save_layout->setChecked( settings.value( "ActionSaveLayout" ).toBool() );
 			m_action_auto_start->setChecked( settings.value( "ActionAutoStart" ).toBool() );
@@ -293,6 +313,7 @@ namespace certify {
 			settings.setValue( "ActionShowDock_1", m_action_show_dock_1->isChecked() );
 			settings.setValue( "ActionShowDock_2", m_action_show_dock_2->isChecked() );
 			settings.setValue( "ActionShowDock_3", m_action_show_dock_3->isChecked() );
+			settings.setValue( "ActionShowDock_Project", m_action_show_dock_project->isChecked() );
 
 			settings.setValue( "ActionSaveLayout", m_action_save_layout->isChecked() );
 			settings.setValue( "ActionAutoStart", m_action_auto_start->isChecked() );
@@ -315,6 +336,7 @@ namespace certify {
 			settings.setValue( "ActionShowDock_1", settings.value( "ActionShowDock_1" ).toBool() );
 			settings.setValue( "ActionShowDock_2", settings.value( "ActionShowDock_2" ).toBool() );
 			settings.setValue( "ActionShowDock_3", settings.value( "ActionShowDock_3" ).toBool() );
+			settings.setValue( "ActionShowDock_Project", settings.value( "ActionShowDock_Project" ).toBool() );
 
 			settings.setValue( "ActionSaveLayout", m_action_save_layout->isChecked() ); // 只有这个保存现值，其他均保存原值
 			settings.setValue( "ActionAutoStart", settings.value( "ActionAutoStart" ).toBool() );
@@ -486,6 +508,15 @@ namespace certify {
 		}
 	}
 
+	void MainWindow::ShowDockWidget_Project( bool show ) {
+		if( true == show ) {
+			m_dock_widget_project->show();
+		}
+		else {
+			m_dock_widget_project->hide();
+		}
+	}
+
 	void MainWindow::OnActionSaveLayout( bool save ) {
 		if( true == save )
 		{
@@ -547,6 +578,9 @@ namespace certify {
 			else if( target == m_dock_widget_3 ) {
 				m_action_show_dock_3->setChecked( true );
 			}
+			else if( target == m_dock_widget_project ) {
+				m_action_show_dock_project->setChecked( true );
+			}
 		}
 		if( event->type() == QEvent::Close ) {
 			if( target == m_main_tool_bar ) {
@@ -560,6 +594,9 @@ namespace certify {
 			}
 			else if( target == m_dock_widget_3 ) {
 				m_action_show_dock_3->setChecked( false );
+			}
+			else if( target == m_dock_widget_project ) {
+				m_action_show_dock_project->setChecked( false );
 			}
 		}
 		return QMainWindow::eventFilter( target, event );
