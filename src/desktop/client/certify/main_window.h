@@ -36,6 +36,7 @@
 #include "about_dialog.h"
 #include "infos_dialog.h"
 #include "project_dialog.h"
+#include "create_project_dialog.h"
 
 namespace certify {
 
@@ -62,18 +63,20 @@ namespace certify {
 
 	private slots:
 		void UpdateTime();
+		void OnActionNewProject();
 		void OnActionExit();
 		void OnActionAbout();
+		void OnActionTests();
 		void ShowMainWindow();
 		void HideMainWindow();
 		void TrayIconMsgClicked();
 		void TrayIconActivated( QSystemTrayIcon::ActivationReason reason );
 		void OnActionAutoStart( bool start );
 		void ShowToolBar_Main( bool show );
+		void ShowDockWidget_Project( bool show );
 		void ShowDockWidget_1( bool show );
 		void ShowDockWidget_2( bool show );
 		void ShowDockWidget_3( bool show );
-		void ShowDockWidget_Project( bool show );
 		void OnActionSaveLayout( bool save );
 
 	protected:
@@ -90,16 +93,18 @@ namespace certify {
 		QMenu* m_tray_icon_menu_auto_start;
 		QSystemTrayIcon* m_tray_icon;
 
+		QAction* m_action_new_project;
 		QAction* m_action_exit;
 		QAction* m_action_about;
+		QAction* m_action_tests;
 		QAction* m_action_show_tool_bar_main;
 		QAction* m_action_save_layout;
 		QAction* m_action_auto_start;
+		QAction* m_action_show_dock_project;
 		QAction* m_action_show_dock_1;
 		QAction* m_action_show_dock_2;
 		QAction* m_action_show_dock_3;
-		QAction* m_action_show_dock_project;
-
+		
 		QMenuBar* m_menu_bar;
 		QMenu* m_menu_file;
 		QMenu* m_menu_tool;
@@ -116,18 +121,19 @@ namespace certify {
 		QLabel* m_label_info;
 		QLabel* m_label_time;
 
-		QTextEdit* m_text_edit_1;
-		QTextEdit* m_text_edit_2;
-		QTextEdit* m_text_edit_3;
+		QDockWidget* m_dock_widget_project;
 		QDockWidget* m_dock_widget_1;
 		QDockWidget* m_dock_widget_2;
 		QDockWidget* m_dock_widget_3;
-		QDockWidget* m_dock_widget_project;
 		std::vector<QDockWidget*> m_vec_dock_widget;
 
+		QTextEdit* m_text_edit_1;
+		QTextEdit* m_text_edit_2;
+		QTextEdit* m_text_edit_3;
 		AboutDialog* m_about_dialog;
 		InfosDialog* m_infos_dialog;
 		ProjectDialog* m_project_dialog;
+		CreateProjectDialog* m_create_project_dialog;
 
 	private:
 		std::string m_log_cate;

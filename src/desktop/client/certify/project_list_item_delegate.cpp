@@ -25,12 +25,10 @@ namespace certify {
 		if( index.isValid() ) {
 			painter->save();
 
+			ItemData data = index.data( Qt::UserRole + 1 ).value<ItemData>();
 			ItemStatus status = (ItemStatus)( index.data( Qt::UserRole ).toInt() );
-
-			QVariant variant = index.data( Qt::UserRole + 1 );
-			ItemData data = variant.value<ItemData>();
-
-			QStyleOptionViewItem viewOption( option ); // 用来在视图中画一个 item
+			
+			QStyleOptionViewItem view_option( option ); // 用来在视图中画一个列表项
 
 			QRectF rect;
 			rect.setX( option.rect.x() );
@@ -38,8 +36,8 @@ namespace certify {
 			rect.setWidth( option.rect.width() - 1 );
 			rect.setHeight( option.rect.height() - 1 );
 
-			// QPainterPath 画圆角矩形
-			const qreal radius = 7.0;
+			// 画圆角矩形
+			const qreal radius = 0.0; // 8.0
 			QPainterPath path;
 			path.moveTo( rect.topRight() - QPointF( radius, 0 ) );
 			path.lineTo( rect.topLeft() + QPointF( radius, 0 ) );
@@ -57,8 +55,8 @@ namespace certify {
 				painter->drawPath( path );
 			}
 			else if( option.state.testFlag( QStyle::State_MouseOver ) ) {
-				painter->setPen( QPen( Qt::green ) );
-				painter->setBrush( Qt::NoBrush );
+				painter->setPen( QPen( Qt::gray ) );
+				painter->setBrush( QColor( 229, 241, 255 ) );
 				painter->drawPath( path );
 			}
 			else {
@@ -68,10 +66,10 @@ namespace certify {
 			}
 
 			// 绘制数据位置
-			QRect NameRect = QRect( rect.left() + 10, rect.top() + 10, rect.width() - 30, 20 );
-			QRect circle = QRect( NameRect.right(), rect.top() + 10, 10, 10 );
-			QRect telRect = QRect( rect.left() + 10, rect.bottom() - 25, rect.width() - 10, 20 );
-
+			QRect rect_name = QRect( rect.left() + 20, rect.top() + 5, rect.width() - 30, 20 );
+			QRect rect_phone = QRect( rect.left() + 20, rect.bottom() - 20, rect.width() - 10, 20 );
+			QRect circle = QRect( rect.left() + 5, rect.top() + 10, 10, 10 );
+			
 			switch( status ) {
 			case S_R:
 				painter->setBrush( Qt::red );
@@ -90,19 +88,19 @@ namespace certify {
 			painter->drawEllipse( circle ); // 画圆圈
 
 			painter->setPen( QPen( Qt::black ) );
-			painter->setFont( QFont( "Times", 12, QFont::Bold ) );
-			painter->drawText( NameRect, Qt::AlignLeft, data.m_name ); // 绘制名字
+			painter->setFont( QFont( "Times", 11, QFont::Bold ) );
+			painter->drawText( rect_name, Qt::AlignLeft, data.m_name ); // 绘制名字
 
 			painter->setPen( QPen( Qt::gray ) );
 			painter->setFont( QFont( "Times", 10 ) );
-			painter->drawText( telRect, Qt::AlignLeft, data.m_phone ); // 绘制电话
+			painter->drawText( rect_phone, Qt::AlignLeft, data.m_phone ); // 绘制电话
 
 			painter->restore();
 		}
 	}
 
 	QSize ProjectListItemDelegate::sizeHint( const QStyleOptionViewItem& option, const QModelIndex& index ) const {
-		return QSize( 160, 60 );
+		return QSize( 150, 45 );
 	}
 
 } // namespace certify

@@ -12,9 +12,13 @@
 #ifndef CERTIFY_CERTIFY_PROJECT_DIALOG_H
 #define CERTIFY_CERTIFY_PROJECT_DIALOG_H
 
+#include <map>
+
 #include <QtCore/QSortFilterProxyModel>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QListView>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 
@@ -36,29 +40,28 @@ namespace certify {
 
 	public:
 		void InitData();
+		void CreateProject( std::string project_name, std::string project_path );
+		bool CanCreateProject( std::string project_name, std::string project_path );
+
+	private slots:
+		void OnActionListTest();
+		void OnActionListText();
+		void OnShowListMenu( const QPoint& point );
+		void OnProjectListItemDoubleClicked( const QModelIndex& index );
 
 	private:
 		QListView* m_list_view;
 		QStandardItemModel* m_item_model;
 		QSortFilterProxyModel* m_proxy_model;
-		ProjectListItemDelegate* m_item_delegate;
+
+		QMenu* m_menu_list;
+		QAction* m_action_list_test;
+		QAction* m_action_list_text;
+
 		QVBoxLayout* m_layout_v;
 
-		//QWidget* m_widget;
-		//QTextEdit* m_text_edit;
-		//QSpacerItem* m_phs_spacer;
-		//QDialogButtonBox* m_button_box;
-		//QVBoxLayout* m_layout_v;
-
-		//QPoint m_point;
-		//double m_transparent;
-		//QTimer* m_timer_show;
-		//QTimer* m_timer_stay;
-		//QTimer* m_timer_hide;
-		//int32_t m_desktop_height;
-
-		//bool m_is_show;
-		//std::string m_info_text;
+		std::map<std::string, std::string> m_map_project_name;
+		std::map<std::string, std::string> m_map_project_path;
 	};
 
 } // namespace certify

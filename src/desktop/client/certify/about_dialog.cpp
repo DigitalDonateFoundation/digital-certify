@@ -36,24 +36,24 @@ namespace certify {
 	}
 
 	void AboutDialog::InitInterface() {
-		int nWinSizeX = 390;
-		int nWinSizeY = 230;
+		int wind_size_x = 390;
+		int wind_size_y = 230;
 
 		setWindowOpacity( 0.85 );
-		setFixedSize( QSize( nWinSizeX, nWinSizeY ) );
+		setFixedSize( QSize( wind_size_x, wind_size_y ) );
 		setWindowFlags( Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool );
 
 		m_widget = new QWidget( this );
-		m_widget->setGeometry( QRect( 0, 0, nWinSizeX, nWinSizeY ) );
+		m_widget->setGeometry( QRect( 0, 0, wind_size_x, wind_size_y ) );
 		m_widget->setStyleSheet( "background-color:white;border:1px;border-style:outset;border-color:rgb(240,130,0);" );
 
-		QFont qFontApp;
-		qFontApp.setPointSize( 20 );
+		QFont font_text;
+		font_text.setPointSize( 20 );
 
 		m_label_app_name = new QLabel( QString::fromLocal8Bit( THE_APP_NAME ), m_widget );
 		m_label_app_name->setAlignment( Qt::AlignHCenter );
 		m_label_app_name->setStyleSheet( "color:rgb(128,0,0);" );
-		m_label_app_name->setFont( qFontApp );
+		m_label_app_name->setFont( font_text );
 
 		m_label_app_version = new QLabel( QString::fromLocal8Bit( THE_APP_VERSION ), m_widget );
 		m_label_app_version->setAlignment( Qt::AlignHCenter );
