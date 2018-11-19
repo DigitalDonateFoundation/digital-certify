@@ -43,6 +43,9 @@ SET (SDKDIR_QT_PATH "D:/QT/5.9.3/msvc2017_64" CACHE PATH "sdk qt dir." FORCE)
 SET (SDKDIR_BASICX_INCLUDE "${SDKDIR_PATH}/BasicX/${PATH_FLAG_PLATFORM}/include" CACHE PATH "basicx include dir." FORCE)
 SET (SDKDIR_BASICX_LIBRARY_DEBUG "${SDKDIR_PATH}/BasicX/${PATH_FLAG_PLATFORM}/${PATH_FLAG_BINORLIB}/${PATH_FLAG_LINKTYPE}/debug" CACHE PATH "basicx library debug dir." FORCE)
 SET (SDKDIR_BASICX_LIBRARY_RELEASE "${SDKDIR_PATH}/BasicX/${PATH_FLAG_PLATFORM}/${PATH_FLAG_BINORLIB}/${PATH_FLAG_LINKTYPE}/release" CACHE PATH "basicx library release dir." FORCE)
+SET (SDKDIR_BERKELEYDB_INCLUDE "${SDKDIR_PATH}/BerkeleyDB/${PATH_FLAG_PLATFORM}/include" CACHE PATH "berkeleydb include dir." FORCE)
+SET (SDKDIR_BERKELEYDB_LIBRARY_DEBUG "${SDKDIR_PATH}/BerkeleyDB/${PATH_FLAG_PLATFORM}/${PATH_FLAG_BINORLIB}/${PATH_FLAG_LINKTYPE}/debug" CACHE PATH "berkeleydb library debug dir." FORCE)
+SET (SDKDIR_BERKELEYDB_LIBRARY_RELEASE "${SDKDIR_PATH}/BerkeleyDB/${PATH_FLAG_PLATFORM}/${PATH_FLAG_BINORLIB}/${PATH_FLAG_LINKTYPE}/release" CACHE PATH "berkeleydb library release dir." FORCE)
 
 SET (CERTIFY_VERSION_MAJOR 0)
 SET (CERTIFY_VERSION_MINOR 1)
@@ -196,6 +199,7 @@ SOURCE_GROUP ("Source Files" FILES ${CERTIFY_SOURCE_FILES})
 
 ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/global")
 ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/shares")
+ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/packer")
 
 INCLUDE_DIRECTORIES ("${PROJECT_SOURCE_DIR}" "${SDKDIR_BASICX_INCLUDE}")
 
@@ -211,11 +215,11 @@ ENDIF ()
 ADD_EXECUTABLE (${PROJECT_NAME} ${CERTIFY_HEADER_FILES} ${CERTIFY_SOURCE_FILES} ${CERTIFY_RESOURCE_FILES})
 
 IF (WIN32)
-    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.lib global.lib shares.lib common.lib syslog.lib)
+    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.lib global.lib shares.lib packer.lib common.lib syslog.lib network.lib)
 ELSEIF (UNIX)
-    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.a global.a shares.a common.a syslog.a)
+    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.a global.a shares.a packer.a common.a syslog.a network.a)
 ELSEIF (APPLE)
-    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.a global.a shares.a common.a syslog.a)
+    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.a global.a shares.a packer.a common.a syslog.a network.a)
 ENDIF ()
 
 IF (WIN32)
@@ -241,8 +245,11 @@ IF (WIN32)
 	)
     INSTALL (
 	    FILES "${SDKDIR_BASICX_LIBRARY_RELEASE}/syslog.dll" 
+              "${SDKDIR_BASICX_LIBRARY_RELEASE}/network.dll" 
+              "${SDKDIR_BERKELEYDB_LIBRARY_RELEASE}/libdb181.dll" # 目前不管 libdb181s.dll
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/global.dll" 
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/shares.dll" 
+		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/packer.dll" 
 	    DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/client"
 	)
     INSTALL (
@@ -289,8 +296,11 @@ ELSEIF ((UNIX) OR (APPLE))
 	)
     INSTALL (
 	    FILES "${SDKDIR_BASICX_LIBRARY_RELEASE}/syslog.so" 
+              "${SDKDIR_BASICX_LIBRARY_RELEASE}/network.so" 
+              "${SDKDIR_BERKELEYDB_LIBRARY_RELEASE}/libdb181.so" # 目前不管 libdb181s.so
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/global.so" 
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/shares.so" 
+		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/packer.so" 
 	    DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/client" 
 	    # PERMISSIONS OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE # 755
 	)

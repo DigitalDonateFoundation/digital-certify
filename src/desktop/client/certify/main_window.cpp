@@ -15,6 +15,8 @@
 
 #include "global/define.h"
 
+#include "packer/tester.h"
+
 #include "main_window.h"
 
 namespace certify {
@@ -484,6 +486,8 @@ namespace certify {
 		}
 		m_infos_dialog->SetDialogInfos( info_text );
 		m_infos_dialog->ShowMessage();
+
+		Test_Packer();
 	}
 
 	void MainWindow::ShowMainWindow() {
