@@ -487,7 +487,7 @@ namespace certify {
 		m_infos_dialog->SetDialogInfos( info_text );
 		m_infos_dialog->ShowMessage();
 
-		Test_Packer();
+		//Test_SysDBI_B();
 	}
 
 	void MainWindow::ShowMainWindow() {
