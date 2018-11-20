@@ -15,13 +15,25 @@
 #include <QtGui/QPainter>
 #include <QtGui/QPainterPath>
 #include <QtGui/QStandardItemModel>
+#include <QtCore/QMetaType>
 #include <QtCore/QModelIndex>
 #include <QtWidgets/QStyledItemDelegate>
 
+#include "project/project.h"
+
+#define DEF_USER_ROLE_PROJECT_STATUS    Qt::UserRole + 0 //
+#define DEF_USER_ROLE_PROJECT_USERDATA  Qt::UserRole + 1 //
+
 namespace certify {
 
-	class ProjectListItemDelegate : public QStyledItemDelegate
-	{
+	struct UserData {
+		QString m_project_name;
+		QString m_project_path;
+	};
+
+	Q_DECLARE_METATYPE( UserData )
+
+	class ProjectListItemDelegate : public QStyledItemDelegate {
 		Q_OBJECT
 
 	public:

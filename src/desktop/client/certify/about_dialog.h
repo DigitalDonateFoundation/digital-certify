@@ -24,8 +24,7 @@
 
 namespace certify {
 
-	class AboutDialog : public QDialog
-	{
+	class AboutDialog : public QDialog {
 		Q_OBJECT
 
 	public:

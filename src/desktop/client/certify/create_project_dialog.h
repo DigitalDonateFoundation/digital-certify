@@ -26,8 +26,7 @@
 
 namespace certify {
 
-	class CreateProjectDialog : public QDialog
-	{
+	class CreateProjectDialog : public QDialog {
 		Q_OBJECT
 
 	public:
@@ -36,7 +35,9 @@ namespace certify {
 
 	public:
 		void InitInterface();
-		bool eventFilter( QObject* target, QEvent* event );
+
+	private:
+		bool eventFilter( QObject* target, QEvent* event ) override;
 
 	private slots:
 		void HandleAccepted();

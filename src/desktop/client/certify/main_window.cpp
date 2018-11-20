@@ -141,7 +141,7 @@ namespace certify {
 		setWindowIcon( QIcon( ":/certify/resource/certify.ico" ) );
 
 		m_timer = new QTimer( this );
-		connect( m_timer, SIGNAL( timeout() ), this, SLOT( UpdateTime() ) );
+		QObject::connect( m_timer, SIGNAL( timeout() ), this, SLOT( UpdateTime() ) );
 		m_timer->start( 1000 );
 
 		m_menu_bar = new QMenuBar( this );

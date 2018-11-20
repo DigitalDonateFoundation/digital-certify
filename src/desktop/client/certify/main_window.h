@@ -40,8 +40,7 @@
 
 namespace certify {
 
-	class MainWindow : public QMainWindow
-	{
+	class MainWindow : public QMainWindow {
 		Q_OBJECT
 
 	public:
@@ -81,7 +80,7 @@ namespace certify {
 
 	protected:
 		void closeEvent( QCloseEvent* event );
-		bool eventFilter( QObject* target, QEvent* event );
+		bool eventFilter( QObject* target, QEvent* event ) override;
 
 	private:
 		QTimer* m_timer;

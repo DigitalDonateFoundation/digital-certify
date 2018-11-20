@@ -25,8 +25,7 @@ namespace certify {
 
 	class SysDBI_B_P;
 
-	class CERTIFY_PACKER_EXPIMP SysDBI_B
-	{
+	class CERTIFY_PACKER_EXPIMP SysDBI_B {
 	public:
 		SysDBI_B();
 		~SysDBI_B();

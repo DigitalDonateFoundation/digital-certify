@@ -16,8 +16,7 @@
 
 namespace certify {
 
-	class CERTIFY_GLOBAL_EXPIMP Global
-	{
+	class CERTIFY_GLOBAL_EXPIMP Global {
 	public:
 		Global() {};
 		~Global() {};

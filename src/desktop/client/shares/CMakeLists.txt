@@ -8,7 +8,7 @@
 #
 # Other copyright notice and conditions to be added...
 
-INCLUDE_DIRECTORIES ("${PROJECT_SOURCE_DIR}")
+INCLUDE_DIRECTORIES (${PROJECT_SOURCE_DIR})
 
 FILE (GLOB SHARES_HEADER_FILES "./*.h")
 FILE (GLOB SHARES_SOURCE_FILES "./*.cpp")

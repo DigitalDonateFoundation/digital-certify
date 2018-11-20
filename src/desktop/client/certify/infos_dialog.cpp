@@ -76,9 +76,9 @@ namespace certify {
 
 		QObject::connect( m_button_box, SIGNAL( accepted() ), this, SLOT( OnButtonClose() ) );
 
-		connect( m_timer_show, SIGNAL( timeout() ), this, SLOT( OnTimerShow() ) );
-		connect( m_timer_stay, SIGNAL( timeout() ), this, SLOT( OnTimerStay() ) );
-		connect( m_timer_hide, SIGNAL( timeout() ), this, SLOT( OnTimerHide() ) );
+		QObject::connect( m_timer_show, SIGNAL( timeout() ), this, SLOT( OnTimerShow() ) );
+		QObject::connect( m_timer_stay, SIGNAL( timeout() ), this, SLOT( OnTimerStay() ) );
+		QObject::connect( m_timer_hide, SIGNAL( timeout() ), this, SLOT( OnTimerHide() ) );
 	}
 
 	void InfosDialog::ShowMessage() {

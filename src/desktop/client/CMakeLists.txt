@@ -205,6 +205,7 @@ SOURCE_GROUP ("Source Files" FILES ${CERTIFY_SOURCE_FILES})
 
 ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/global")
 ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/shares")
+ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/project")
 ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/packer")
 
 INCLUDE_DIRECTORIES ("${PROJECT_SOURCE_DIR}" "${SDKDIR_BASICX_INCLUDE}")
@@ -221,11 +222,11 @@ ENDIF ()
 ADD_EXECUTABLE (${PROJECT_NAME} ${CERTIFY_HEADER_FILES} ${CERTIFY_SOURCE_FILES} ${CERTIFY_RESOURCE_FILES})
 
 IF (WIN32)
-    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.lib global.lib shares.lib packer.lib common.lib syslog.lib network.lib)
+    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.lib global.lib shares.lib project.lib packer.lib common.lib syslog.lib network.lib)
 ELSEIF (UNIX)
-    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.a global.a shares.a packer.a common.a syslog.a network.a)
+    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.a global.a shares.a project.a packer.a common.a syslog.a network.a)
 ELSEIF (APPLE)
-    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.a global.a shares.a packer.a common.a syslog.a network.a)
+    TARGET_LINK_LIBRARIES (${PROJECT_NAME} Qt5::Widgets libtcmalloc.a global.a shares.a project.a packer.a common.a syslog.a network.a)
 ENDIF ()
 
 IF (WIN32)
@@ -247,15 +248,16 @@ IF (WIN32)
 		         "${SDKDIR_QT_PATH}/bin/Qt5Gui.dll" 
 		         "${SDKDIR_QT_PATH}/bin/Qt5Widgets.dll" 
 		         "${SDKDIR_BASICX_LIBRARY_RELEASE}/libtcmalloc.dll" 
+#                 "${SDKDIR_SQLITE_LIBRARY_RELEASE}/SQLite.dll" 
+                 "${SDKDIR_BERKELEYDB_LIBRARY_RELEASE}/libdb181.dll" # 目前不管 libdb181s.dll
 	    DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/client"
 	)
     INSTALL (
 	    FILES "${SDKDIR_BASICX_LIBRARY_RELEASE}/syslog.dll" 
               "${SDKDIR_BASICX_LIBRARY_RELEASE}/network.dll" 
-#              "${SDKDIR_SQLITE_LIBRARY_RELEASE}/SQLite.dll" 
-              "${SDKDIR_BERKELEYDB_LIBRARY_RELEASE}/libdb181.dll" # 目前不管 libdb181s.dll
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/global.dll" 
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/shares.dll" 
+		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/project.dll" 
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/packer.dll" 
 	    DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/client"
 	)
@@ -298,16 +300,17 @@ ELSEIF ((UNIX) OR (APPLE))
 		         "${SDKDIR_QT_PATH}/bin/Qt5Gui.so" 
 		         "${SDKDIR_QT_PATH}/bin/Qt5Widgets.so" 
 		         "${SDKDIR_BASICX_LIBRARY_RELEASE}/libtcmalloc.so" 
+#                 "${SDKDIR_SQLITE_LIBRARY_RELEASE}/SQLite.so" 
+                 "${SDKDIR_BERKELEYDB_LIBRARY_RELEASE}/libdb181.so" # 目前不管 libdb181s.so
 	    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/client" 
 		# PERMISSIONS OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE # 755
 	)
     INSTALL (
 	    FILES "${SDKDIR_BASICX_LIBRARY_RELEASE}/syslog.so" 
               "${SDKDIR_BASICX_LIBRARY_RELEASE}/network.so" 
-#              "${SDKDIR_SQLITE_LIBRARY_RELEASE}/SQLite.so" 
-              "${SDKDIR_BERKELEYDB_LIBRARY_RELEASE}/libdb181.so" # 目前不管 libdb181s.so
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/global.so" 
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/shares.so" 
+		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/project.so" 
 		      "${PROJECT_BINARY_DIR}/runtime/${PATH_FLAG_COMPILE}/packer.so" 
 	    DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/client" 
 	    # PERMISSIONS OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE # 755

@@ -9,7 +9,6 @@
 * Other copyright notice and conditions to be added...
 */
 
-#include "project_list_item.h"
 #include "project_list_item_delegate.h"
 
 namespace certify {
@@ -25,8 +24,8 @@ namespace certify {
 		if( index.isValid() ) {
 			painter->save();
 
-			ItemData data = index.data( Qt::UserRole + 1 ).value<ItemData>();
-			ItemStatus status = (ItemStatus)( index.data( Qt::UserRole ).toInt() );
+			int32_t status = index.data( DEF_USER_ROLE_PROJECT_STATUS ).toInt();
+			UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
 			
 			QStyleOptionViewItem view_option( option ); // 用来在视图中画一个列表项
 
@@ -50,7 +49,7 @@ namespace certify {
 			path.quadTo( rect.topRight(), rect.topRight() + QPointF( -radius, -0 ) );
 
 			if( option.state.testFlag( QStyle::State_Selected ) ) {
-				painter->setPen( QPen( Qt::blue ) );
+				painter->setPen( QPen( QColor( 0, 128, 255 ) ) );
 				painter->setBrush( QColor( 229, 241, 255 ) );
 				painter->drawPath( path );
 			}
@@ -67,21 +66,25 @@ namespace certify {
 
 			// 绘制数据位置
 			QRect rect_name = QRect( rect.left() + 20, rect.top() + 5, rect.width() - 30, 20 );
-			QRect rect_phone = QRect( rect.left() + 20, rect.bottom() - 20, rect.width() - 10, 20 );
+			QRect rect_path = QRect( rect.left() + 20, rect.bottom() - 20, rect.width() - 10, 20 );
 			QRect circle = QRect( rect.left() + 5, rect.top() + 10, 10, 10 );
 			
 			switch( status ) {
-			case S_R:
-				painter->setBrush( Qt::red );
-				painter->setPen( QPen( Qt::red ) );
+			case DEF_PROJECT_STATUS_CREATE:
+				painter->setBrush( QColor( 128, 128, 128 ) );
+				painter->setPen( QPen( QColor( 128, 128, 128 ) ) );
 				break;
-			case S_G:
-				painter->setBrush( Qt::green );
-				painter->setPen( QPen( Qt::green ) );
+			case DEF_PROJECT_STATUS_MODIFY:
+				painter->setBrush( QColor( 255, 192, 0 ) );
+				painter->setPen( QPen( QColor( 255, 192, 0 ) ) );
 				break;
-			case S_B:
-				painter->setBrush( Qt::blue );
-				painter->setPen( QPen( Qt::blue ) );
+			case DEF_PROJECT_STATUS_COMMIT:
+				painter->setBrush( QColor( 0, 128, 0 ) );
+				painter->setPen( QPen( QColor( 0, 128, 0 ) ) );
+				break;
+			case DEF_PROJECT_STATUS_ERRORS:
+				painter->setBrush( QColor( 255, 0, 0 ) );
+				painter->setPen( QPen( QColor( 255, 0, 0 ) ) );
 				break;
 			}
 
@@ -89,11 +92,11 @@ namespace certify {
 
 			painter->setPen( QPen( Qt::black ) );
 			painter->setFont( QFont( "Times", 11, QFont::Bold ) );
-			painter->drawText( rect_name, Qt::AlignLeft, data.m_name ); // 绘制名字
+			painter->drawText( rect_name, Qt::AlignLeft, user_data.m_project_name ); // 绘制名字
 
 			painter->setPen( QPen( Qt::gray ) );
 			painter->setFont( QFont( "Times", 10 ) );
-			painter->drawText( rect_phone, Qt::AlignLeft, data.m_phone ); // 绘制电话
+			painter->drawText( rect_path, Qt::AlignLeft, user_data.m_project_path ); // 绘制路径
 
 			painter->restore();
 		}

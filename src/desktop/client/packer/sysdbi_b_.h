@@ -18,8 +18,7 @@
 
 namespace certify {
 
-	class SysDBI_B_P
-	{
+	class SysDBI_B_P {
 	public:
 		SysDBI_B_P();
 		~SysDBI_B_P();

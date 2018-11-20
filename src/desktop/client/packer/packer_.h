@@ -16,8 +16,7 @@
 
 namespace certify {
 
-	class Packer_P
-	{
+	class Packer_P {
 	public:
 		Packer_P();
 		~Packer_P();

@@ -20,6 +20,9 @@
 #define CERTIFY_SHARES_EXP
 //#define CERTIFY_SHARES_IMP
 
+#define CERTIFY_PROJECT_EXP
+//#define CERTIFY_PROJECT_IMP
+
 #define CERTIFY_PACKER_EXP
 //#define CERTIFY_PACKER_IMP
 
@@ -41,6 +44,16 @@
 
 #ifdef CERTIFY_SHARES_IMP
     #define CERTIFY_SHARES_EXPIMP __declspec(dllimport)
+#endif
+
+//------------------------------//
+
+#ifdef CERTIFY_PROJECT_EXP
+    #define CERTIFY_PROJECT_EXPIMP __declspec(dllexport)
+#endif
+
+#ifdef CERTIFY_PROJECT_IMP
+    #define CERTIFY_PROJECT_EXPIMP __declspec(dllimport)
 #endif
 
 //------------------------------//

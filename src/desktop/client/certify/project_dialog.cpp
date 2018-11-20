@@ -21,7 +21,9 @@ namespace certify {
 	, m_menu_list( nullptr )
 	, m_action_list_test( nullptr )
 	, m_action_list_text( nullptr )
-	, m_layout_v( nullptr ) {
+	, m_layout_v( nullptr )
+	, m_project( nullptr ) {
+		m_project = Project::GetInstance();
 		InitInterface();
 	}
 
@@ -53,7 +55,7 @@ namespace certify {
 		InitData();
 		m_proxy_model = new QSortFilterProxyModel( m_list_view );
 		m_proxy_model->setSourceModel( m_item_model );
-		m_proxy_model->setFilterRole( Qt::UserRole );
+		m_proxy_model->setFilterRole( DEF_USER_ROLE_PROJECT_STATUS );
 		m_proxy_model->setDynamicSortFilter( true );
 		m_list_view->setModel( m_proxy_model );
 		
@@ -74,78 +76,34 @@ namespace certify {
 	void ProjectDialog::InitData() {
 		for( int32_t i = 0; i < 3; ++i ) {
 			QStandardItem* item = new QStandardItem;
-			ItemData item_data;
-			item_data.m_name = QString( "Name: %1" ).arg( i );
-			item_data.m_phone = QString( "Phone: 1331234567%1" ).arg( i );
-			int32_t rand_number = rand() % 3;
-			ItemStatus item_status;
-			switch( rand_number ) {
-			case 0:
-				item_status = S_R;
-				break;
-			case 1:
-				item_status = S_G;
-				break;
-			case 2:
-				item_status = S_B;
-				break;
-			}
-			item->setData( item_status, Qt::UserRole ); // 单一存取
-			item->setData( QVariant::fromValue( item_data ), Qt::UserRole + 1 ); // 整体存取
+			UserData user_data;
+			user_data.m_project_name = QString( "Name: %1" ).arg( i );
+			user_data.m_project_path = QString( "Path: 1331234567%1" ).arg( i );
+			item->setData( rand() % 4, DEF_USER_ROLE_PROJECT_STATUS ); // 单一存取
+			item->setData( QVariant::fromValue( user_data ), DEF_USER_ROLE_PROJECT_USERDATA ); // 整体存取
 			item->setToolTip( QString( "%1 1331234567%2" ).arg( i ).arg( i ) );
 			m_item_model->appendRow( item );
 		}
 	}
 
-	void ProjectDialog::CreateProject( std::string project_name, std::string project_path ) {
-		bool is_exist = false;
-		auto it_pn = m_map_project_name.find( project_name );
-		if( it_pn != m_map_project_name.end() ) { // 已存在
-			is_exist = true;
-		}
-		auto it_pp = m_map_project_path.find( project_path );
-		if( it_pp != m_map_project_path.end() ) { // 已存在
-			is_exist = true;
-		}
-		if( false == is_exist ) {
-			m_map_project_name[project_name] = project_name;
-			m_map_project_path[project_path] = project_path;
-			
+	bool ProjectDialog::CreateProject( std::string name, std::string path ) {
+		if( true == m_project->CanCreateProject( name, path ) ) {
+			m_project->CreateProject( name, path ); //
 			QStandardItem* item = new QStandardItem;
-			ItemData item_data;
-			item_data.m_name = QString::fromLocal8Bit( project_name.c_str() );
-			item_data.m_phone = QString::fromLocal8Bit( project_path.c_str() );
-			int32_t rand_number = rand() % 3;
-			ItemStatus item_status;
-			switch( rand_number ) {
-			case 0:
-				item_status = S_R;
-				break;
-			case 1:
-				item_status = S_G;
-				break;
-			case 2:
-				item_status = S_B;
-				break;
-			}
-			item->setData( item_status, Qt::UserRole ); // 单一存取
-			item->setData( QVariant::fromValue( item_data ), Qt::UserRole + 1 ); // 整体存取
-			item->setToolTip( QString::fromLocal8Bit( project_path.c_str() ) );
+			UserData user_data;
+			user_data.m_project_name = QString::fromLocal8Bit( name.c_str() );
+			user_data.m_project_path = QString::fromLocal8Bit( path.c_str() );
+			item->setData( DEF_PROJECT_STATUS_CREATE, DEF_USER_ROLE_PROJECT_STATUS ); // 单一存取
+			item->setData( QVariant::fromValue( user_data ), DEF_USER_ROLE_PROJECT_USERDATA ); // 整体存取
+			item->setToolTip( QString::fromLocal8Bit( path.c_str() ) );
 			m_item_model->appendRow( item );
+			return true;
 		}
+		return false;
 	}
 
-	bool ProjectDialog::CanCreateProject( std::string project_name, std::string project_path ) {
-		bool is_exist = false;
-		auto it_pn = m_map_project_name.find( project_name );
-		if( it_pn != m_map_project_name.end() ) { // 已存在
-			is_exist = true;
-		}
-		auto it_pp = m_map_project_path.find( project_path );
-		if( it_pp != m_map_project_path.end() ) { // 已存在
-			is_exist = true;
-		}
-		return !is_exist;
+	bool ProjectDialog::CanCreateProject( std::string name, std::string path ) {
+		return m_project->CanCreateProject( name, path );
 	}
 
 	void ProjectDialog::OnActionListTest() {
@@ -155,7 +113,7 @@ namespace certify {
 	void ProjectDialog::OnActionListText() {
 		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "Text" ) );
 
-		m_proxy_model->setFilterFixedString( QString::number( ItemStatus::S_B ) ); // 测试：仅显示蓝色项 // setFilterFixedString( QString() ) 还原
+//		m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_MODIFY ) ); // 测试：仅显示黄色项 // setFilterFixedString( QString() ) 还原
 	}
 
 	void ProjectDialog::OnShowListMenu( const QPoint& point ) {
@@ -172,14 +130,14 @@ namespace certify {
 			m_action_list_test->setIcon( QIcon( ":/certify/resource/certify.ico" ) );
 			QObject::connect( m_action_list_test, SIGNAL( triggered() ), this, SLOT( OnActionListTest() ) );
 
-			m_proxy_model->setFilterFixedString( QString::number( ItemStatus::S_R ) ); // 测试：仅显示红色项 // setFilterFixedString( QString() ) 还原
+//			m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_ERRORS ) ); // 测试：仅显示红色项 // setFilterFixedString( QString() ) 还原
 		}
 		else { // 未选中
 			m_action_list_test = m_menu_list->addAction( QString::fromLocal8Bit( "未选" ) );
 			m_action_list_test->setIcon( QIcon( ":/certify/resource/certify.ico" ) );
 			QObject::connect( m_action_list_test, SIGNAL( triggered() ), this, SLOT( OnActionListTest() ) );
 
-			m_proxy_model->setFilterFixedString( QString::number( ItemStatus::S_G ) ); // 测试：仅显示绿色项 // setFilterFixedString( QString() ) 还原
+//			m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_COMMIT ) ); // 测试：仅显示绿色项 // setFilterFixedString( QString() ) 还原
 		}
 
 		int32_t row_count = m_item_model->rowCount();
@@ -193,16 +151,16 @@ namespace certify {
 	}
 
 	void ProjectDialog::OnProjectListItemDoubleClicked( const QModelIndex& index ) {
-		ItemData data = index.data( Qt::UserRole + 1 ).value<ItemData>();
-		ItemStatus status = (ItemStatus)( index.data( Qt::UserRole ).toInt() );
-		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString( "DoubleClicked: %1 %2 %3 %4" ).arg( index.row() ).arg( status ).arg( data.m_name ).arg( data.m_phone ) );
+		int32_t status = index.data( DEF_USER_ROLE_PROJECT_STATUS ).toInt();
+		UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
+		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString( "DoubleClicked: %1 %2 %3 %4" ).arg( index.row() ).arg( status ).arg( user_data.m_project_name ).arg( user_data.m_project_path ) );
 
 		// 在使用代理模型后，由于开启了动态排序模式，如果修改代理模型的数据，在第一个item修改数据后可能就不在当前过滤模型中，会被过滤掉，后面的item的QModelIndex就会变化，导致后续的修改失败。
 		// 有两个方法可处理，一是不修改代理模型而是直接修改源模型的数据，二是在修改模型数据的时候关闭代理模型的动态排序功能修改完再开启。
 		// m_proxy_model->setDynamicSortFilter( false );
 		// m_proxy_model->setDynamicSortFilter( true );
-		QModelIndex index_test = m_proxy_model->mapToSource( index ); // 必须先获取 源 Model 的 ModelIndex
-		m_item_model->setData( index_test, ItemStatus::S_R, Qt::UserRole ); // 测试：变成红色
+//		QModelIndex index_test = m_proxy_model->mapToSource( index ); // 必须先获取 源 Model 的 ModelIndex
+//		m_item_model->setData( index_test, DEF_PROJECT_STATUS_ERRORS, DEF_USER_ROLE_PROJECT_STATUS ); // 测试：变成红色
 	}
 
 } // namespace certify

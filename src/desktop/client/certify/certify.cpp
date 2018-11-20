@@ -16,6 +16,7 @@
 #include <QtCore/QStringList>
 
 #include "global/define.h"
+#include "project/project.h"
 
 #include "main_window.h"
 #include "certify.h"
@@ -32,12 +33,16 @@ int32_t main( int32_t argc, char* argv[] ) {
 	syslog->InitSysLog( THE_APP_NAME, THE_APP_VERSION, THE_APP_COMPANY, THE_APP_COPYRIGHT );
 	syslog->WriteSysInfo();
 
+	certify::Project project; // 唯一实例 // 02
+
 	QStringList qt_plugins_path;
 	qt_plugins_path.push_back( "./extdlls" );
 	QApplication::setLibraryPaths( qt_plugins_path );
 
 	QFont font( "YaHei", 9, QFont::Normal, false ); // SimSun、Times、YaHei
 	QApplication::setFont( font );
+
+	QCoreApplication::setAttribute( Qt::AA_EnableHighDpiScaling ); // 高分屏支持，要求 QT 版本 >= 5.6.0 // 在 QApplication 创建之前
 
 	QApplication application( argc, argv );
 

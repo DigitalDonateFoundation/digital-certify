@@ -16,8 +16,7 @@
 
 namespace certify {
 
-	class CERTIFY_SHARES_EXPIMP Shares
-	{
+	class CERTIFY_SHARES_EXPIMP Shares {
 	public:
 		Shares() {};
 		~Shares() {};

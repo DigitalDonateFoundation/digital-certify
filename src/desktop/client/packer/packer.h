@@ -16,8 +16,7 @@
 
 namespace certify {
 
-	class CERTIFY_PACKER_EXPIMP Packer
-	{
+	class CERTIFY_PACKER_EXPIMP Packer {
 	public:
 		Packer();
 		~Packer();
