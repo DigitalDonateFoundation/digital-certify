@@ -36,6 +36,7 @@ namespace certify {
 
 	public:
 		void InitData();
+		int32_t LoadExistProject();
 		bool CreateProject( std::string name, std::string path );
 		bool CanCreateProject( std::string name, std::string path );
 
@@ -56,6 +57,9 @@ namespace certify {
 
 	private:
 		Project* m_project;
+		std::string m_path_app_folder;
+		std::string m_path_cfg_folder;
+		std::string m_path_dbf_project;
 	};
 
 } // namespace certify

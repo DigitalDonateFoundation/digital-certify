@@ -290,6 +290,8 @@ namespace certify {
 		QObject::connect( m_action_show_dock_3, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_3( bool ) ) );
 		QObject::connect( m_action_save_layout, SIGNAL( triggered( bool ) ), this, SLOT( OnActionSaveLayout( bool ) ) );
 		QObject::connect( m_action_auto_start, SIGNAL( triggered( bool ) ), this, SLOT( OnActionAutoStart( bool ) ) );
+
+		m_project_dialog->LoadExistProject();
 	}
 
 	// QDockWidget 和 QToolBar 都需设置对象名，这样才能 saveState() 和 restoreState() 状态、位置、大小等
@@ -454,7 +456,9 @@ namespace certify {
 					QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "项目名称 或 项目路径 已经存在，无法新建项目！" ) );
 				}
 				else {
-					m_project_dialog->CreateProject( project_name, project_path );
+					if( false == m_project_dialog->CreateProject( project_name, project_path ) ) {
+						QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "新建项目失败！" ) );
+					}
 				}
 			}
 		}

@@ -24,6 +24,23 @@
 
 namespace certify {
 
+	class CERTIFY_PROJECT_EXPIMP ProjectItem {
+	public:
+		ProjectItem( std::string name, std::string path )
+		: m_name( name )
+		, m_path( path )
+		, m_home( m_path + "/.dc" ) {
+		}
+
+		~ProjectItem() {
+		}
+
+	public:
+		std::string m_name;
+		std::string m_path;
+		std::string m_home;
+	};
+
 	class Project_P;
 
 	class CERTIFY_PROJECT_EXPIMP Project {
@@ -35,9 +52,11 @@ namespace certify {
 		static Project* GetInstance();
 
 	public:
+		std::vector<ProjectItem*> GetAllProject();
+		int32_t LoadExistProject( std::string dbf_path );
 		bool CreateProject( std::string name, std::string path );
 		bool CanCreateProject( std::string name, std::string path );
-
+		
 	private:
 		Project_P* m_project_p;
 		static Project* m_instance;

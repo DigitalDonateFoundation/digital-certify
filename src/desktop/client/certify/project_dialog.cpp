@@ -9,6 +9,9 @@
 * Other copyright notice and conditions to be added...
 */
 
+#include <common/sysdef.h>
+#include <common/assist.h>
+
 #include "project_dialog.h"
 
 namespace certify {
@@ -22,7 +25,10 @@ namespace certify {
 	, m_action_list_test( nullptr )
 	, m_action_list_text( nullptr )
 	, m_layout_v( nullptr )
-	, m_project( nullptr ) {
+	, m_project( nullptr )
+	, m_path_app_folder( "" )
+	, m_path_cfg_folder( "" )
+	, m_path_dbf_project( "" ) {
 		m_project = Project::GetInstance();
 		InitInterface();
 	}
@@ -52,7 +58,7 @@ namespace certify {
 		m_list_view->setDragEnabled( false ); // 不允许拖动
 		//m_list_view->setToolTip( QString::fromLocal8Bit( "123" ) );
 		m_item_model = new QStandardItemModel();
-		InitData();
+//		InitData();
 		m_proxy_model = new QSortFilterProxyModel( m_list_view );
 		m_proxy_model->setSourceModel( m_item_model );
 		m_proxy_model->setFilterRole( DEF_USER_ROLE_PROJECT_STATUS );
@@ -86,9 +92,42 @@ namespace certify {
 		}
 	}
 
+	int32_t ProjectDialog::LoadExistProject() {
+#ifdef __OS_WINDOWS__
+		wchar_t char_path[MAX_PATH] = { 0 };
+		GetModuleFileName( NULL, char_path, MAX_PATH );
+		std::string app_exec_path = basicx::StringToAnsiChar( char_path );
+#endif
+		size_t slash_index = app_exec_path.rfind( '\\' );
+		m_path_app_folder = app_exec_path.substr( 0, slash_index );
+		m_path_cfg_folder = m_path_app_folder + "\\configs";
+		m_path_dbf_project = m_path_cfg_folder + "\\project.db";
+
+		int32_t project_load = m_project->LoadExistProject( m_path_dbf_project );
+		if( project_load < 0 ) {
+			std::string log_info = "从项目信息文件获取已有项目失败！";
+			QMessageBox::warning( this, QString::fromLocal8Bit( "错误" ), QString::fromLocal8Bit( log_info.c_str() ) );
+		}
+
+		std::vector<ProjectItem*> vec_project = m_project->GetAllProject();
+		size_t project_size = vec_project.size();
+		for( size_t i = 0; i < project_size; i++ ) {
+			ProjectItem* project_item = vec_project[i];
+			QStandardItem* item = new QStandardItem;
+			UserData user_data;
+			user_data.m_project_name = QString( project_item->m_name.c_str() );
+			user_data.m_project_path = QString( project_item->m_path.c_str() );
+			item->setData( DEF_PROJECT_STATUS_CREATE, DEF_USER_ROLE_PROJECT_STATUS ); // 单一存取
+			item->setData( QVariant::fromValue( user_data ), DEF_USER_ROLE_PROJECT_USERDATA ); // 整体存取
+			item->setToolTip( QString( project_item->m_path.c_str() ));
+			m_item_model->appendRow( item );
+		}
+
+		return project_size;
+	}
+
 	bool ProjectDialog::CreateProject( std::string name, std::string path ) {
-		if( true == m_project->CanCreateProject( name, path ) ) {
-			m_project->CreateProject( name, path ); //
+		if( true == m_project->CreateProject( name, path ) ) {
 			QStandardItem* item = new QStandardItem;
 			UserData user_data;
 			user_data.m_project_name = QString::fromLocal8Bit( name.c_str() );
