@@ -9,6 +9,7 @@
 * Other copyright notice and conditions to be added...
 */
 
+#include <common/assist.h>
 #include <common/common.h>
 
 #include "project_.h"
@@ -16,11 +17,16 @@
 namespace certify {
 
 	Project_P::Project_P()
-	: m_log_cate( "<PROJECT>" ) {
+	: m_db_project( nullptr )
+	, m_log_cate( "<PROJECT>" ) {
 		m_syslog = basicx::SysLog_S::GetInstance();
 	}
 
 	Project_P::~Project_P() {
+		if( m_db_project != nullptr ) {
+			delete m_db_project;
+			m_db_project = nullptr;
+		}
 	}
 
 	std::vector<ProjectItem*> Project_P::GetAllProject() {
@@ -29,28 +35,28 @@ namespace certify {
 
 	int32_t Project_P::LoadExistProject( std::string dbf_path ) {
 		std::string log_info = "";
-		int32_t project_count = 0;
-
+		
 		m_vec_project.clear();
 		m_map_project.clear();
 		m_map_project_name.clear();
 		m_map_project_path.clear();
+		int32_t project_count = 0;
 
 		try {
 			//FormatLibrary::StandardLibrary::FormatTo( log_info, "{0} {1} {2}", SQLite::VERSION, SQLite::getLibVersion(), SQLITECPP_VERSION );
 			//m_syslog->LogWrite( basicx::syslog_level::c_debug, m_log_cate, log_info );
 
-			SQLite::Database db_project( dbf_path, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE );
+			m_db_project = new SQLite::Database( dbf_path, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE );
 			log_info = "打开项目信息文件完成。";
 			m_syslog->LogWrite( basicx::syslog_level::c_info, m_log_cate, log_info );
 
-			if( false == db_project.tableExists( "project" ) ) {
-				db_project.exec( "CREATE TABLE project ( \
-					                  id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL DEFAULT ( 0 ), \
-					                  name VARCHAR ( 64 ) UNIQUE NOT NULL DEFAULT ( '' ), \
-					                  path VARCHAR ( 256 ) UNIQUE NOT NULL DEFAULT ( '' ) \
-                                  )" );
-				db_project.exec( "CREATE INDEX idx_name ON project ( name ASC )" );
+			if( false == m_db_project->tableExists( "project" ) ) {
+				m_db_project->exec( "CREATE TABLE project ( \
+					                     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL DEFAULT ( 0 ), \
+					                     name VARCHAR ( 64 ) UNIQUE NOT NULL DEFAULT ( '' ), \
+					                     path VARCHAR ( 256 ) UNIQUE NOT NULL DEFAULT ( '' ) \
+                                     )" );
+				m_db_project->exec( "CREATE INDEX idx_name ON project ( name ASC )" );
 				log_info = "创建项目信息库表完成。";
 				m_syslog->LogWrite( basicx::syslog_level::c_info, m_log_cate, log_info );
 			}
@@ -58,12 +64,12 @@ namespace certify {
 			int32_t ret_id = 0;
 			std::string ret_name = "";
 			std::string ret_path = "";
-			SQLite::Statement query( db_project, "SELECT id, name, path FROM project ORDER BY id ASC" );
+			SQLite::Statement query( *m_db_project, "SELECT id, name, path FROM project ORDER BY id ASC" );
 			while( query.executeStep() ) {
 				project_count++; //
 				ret_id = query.getColumn( 0 ).getInt();
-				ret_name = query.getColumn( 1 ).getText();
-				ret_path = query.getColumn( 2 ).getText();
+				ret_name = basicx::StringToGB2312( query.getColumn( 1 ).getText() ); // UTF8 还原
+				ret_path = basicx::StringToGB2312( query.getColumn( 2 ).getText() ); // UTF8 还原
 				ProjectItem* project_item = new ProjectItem( ret_name, ret_path );
 				m_vec_project.push_back( project_item );
 				m_map_project[ret_name] = project_item;
@@ -72,12 +78,13 @@ namespace certify {
 				FormatLibrary::StandardLibrary::FormatTo( log_info, "从项目信息库表获取：{0} {1} {2}", ret_id, ret_name, ret_path );
 				m_syslog->LogWrite( basicx::syslog_level::c_info, m_log_cate, log_info );
 			}
+			query.reset();
 
 			FormatLibrary::StandardLibrary::FormatTo( log_info, "共获取已有项目 {0} 个。", project_count );
 			m_syslog->LogWrite( basicx::syslog_level::c_info, m_log_cate, log_info );
 		}
 		catch( std::exception& e ) {
-			FormatLibrary::StandardLibrary::FormatTo( log_info, "打开项目信息文件失败！{0} {1}", e.what(), dbf_path );
+			FormatLibrary::StandardLibrary::FormatTo( log_info, "打开项目信息文件异常！{0} {1}", e.what(), dbf_path );
 			m_syslog->LogWrite( basicx::syslog_level::c_error, m_log_cate, log_info );
 			return -1;
 		}
@@ -86,18 +93,36 @@ namespace certify {
 	}
 
 	bool Project_P::CreateProject( std::string name, std::string path ) {
+		std::string log_info = "";
+
 		if( false == CanCreateProject( name, path ) ) {
 			return false;
 		}
 
-		// TODO：添加项目信息数据库记录
+		if( m_db_project != nullptr ) {
+			try {
+				SQLite::Statement query( *m_db_project, "INSERT INTO project ( name, path ) VALUES ( ?, ? )" );
+				SQLite::bind( query, basicx::StringToUTF8( name ), basicx::StringToUTF8( path ) ); // 转为 UTF8
+				if( query.exec() != 1 ) {
+					FormatLibrary::StandardLibrary::FormatTo( log_info, "添加项目信息记录失败！{0} {1}", name, path );
+					m_syslog->LogWrite( basicx::syslog_level::c_error, m_log_cate, log_info );
+					return false;
+				}
+				ProjectItem* project_item = new ProjectItem( name, path );
+				m_vec_project.push_back( project_item );
+				m_map_project[name] = project_item;
+				m_map_project_name[name] = name;
+				m_map_project_path[path] = path;
+				return true;
+			}
+			catch( std::exception& e ) {
+				FormatLibrary::StandardLibrary::FormatTo( log_info, "添加项目信息记录异常！{0} {1} {2}", e.what(), name, path );
+				m_syslog->LogWrite( basicx::syslog_level::c_error, m_log_cate, log_info );
+				return false;
+			}
+		}
 
-		ProjectItem* project_item = new ProjectItem( name, path );
-		m_vec_project.push_back( project_item );
-		m_map_project[name] = project_item;
-		m_map_project_name[name] = name;
-		m_map_project_path[path] = path;
-		return true;
+		return false;
 	}
 
 	bool Project_P::CanCreateProject( std::string name, std::string path ) {

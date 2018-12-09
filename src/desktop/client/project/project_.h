@@ -36,6 +36,8 @@ namespace certify {
 		bool CanCreateProject( std::string name, std::string path );
 
 	private:
+		SQLite::Database* m_db_project;
+
 		std::vector<ProjectItem*> m_vec_project;
 		std::map<std::string, ProjectItem*> m_map_project;
 		std::map<std::string, std::string> m_map_project_name;

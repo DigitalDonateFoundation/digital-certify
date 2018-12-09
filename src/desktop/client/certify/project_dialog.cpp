@@ -30,6 +30,17 @@ namespace certify {
 	, m_path_cfg_folder( "" )
 	, m_path_dbf_project( "" ) {
 		m_project = Project::GetInstance();
+
+#ifdef __OS_WINDOWS__
+		wchar_t char_path[MAX_PATH] = { 0 };
+		GetModuleFileName( NULL, char_path, MAX_PATH );
+		std::string app_exec_path = basicx::StringToAnsiChar( char_path );
+#endif
+		size_t slash_index = app_exec_path.rfind( '\\' );
+		m_path_app_folder = app_exec_path.substr( 0, slash_index );
+		m_path_cfg_folder = m_path_app_folder + "\\configs";
+		m_path_dbf_project = m_path_cfg_folder + "\\project.db";
+
 		InitInterface();
 	}
 
@@ -93,16 +104,6 @@ namespace certify {
 	}
 
 	int32_t ProjectDialog::LoadExistProject() {
-#ifdef __OS_WINDOWS__
-		wchar_t char_path[MAX_PATH] = { 0 };
-		GetModuleFileName( NULL, char_path, MAX_PATH );
-		std::string app_exec_path = basicx::StringToAnsiChar( char_path );
-#endif
-		size_t slash_index = app_exec_path.rfind( '\\' );
-		m_path_app_folder = app_exec_path.substr( 0, slash_index );
-		m_path_cfg_folder = m_path_app_folder + "\\configs";
-		m_path_dbf_project = m_path_cfg_folder + "\\project.db";
-
 		int32_t project_load = m_project->LoadExistProject( m_path_dbf_project );
 		if( project_load < 0 ) {
 			std::string log_info = "从项目信息文件获取已有项目失败！";
@@ -115,15 +116,15 @@ namespace certify {
 			ProjectItem* project_item = vec_project[i];
 			QStandardItem* item = new QStandardItem;
 			UserData user_data;
-			user_data.m_project_name = QString( project_item->m_name.c_str() );
-			user_data.m_project_path = QString( project_item->m_path.c_str() );
+			user_data.m_project_name = QString::fromLocal8Bit( project_item->m_name.c_str() );
+			user_data.m_project_path = QString::fromLocal8Bit( project_item->m_path.c_str() );
 			item->setData( DEF_PROJECT_STATUS_CREATE, DEF_USER_ROLE_PROJECT_STATUS ); // 单一存取
 			item->setData( QVariant::fromValue( user_data ), DEF_USER_ROLE_PROJECT_USERDATA ); // 整体存取
 			item->setToolTip( QString( project_item->m_path.c_str() ));
 			m_item_model->appendRow( item );
 		}
 
-		return project_size;
+		return (int32_t)project_size;
 	}
 
 	bool ProjectDialog::CreateProject( std::string name, std::string path ) {
