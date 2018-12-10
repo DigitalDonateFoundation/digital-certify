@@ -35,7 +35,6 @@ namespace certify {
 		void InitInterface();
 
 	public:
-		void InitData();
 		int32_t LoadExistProject();
 		bool CreateProject( std::string name, std::string path );
 		bool CanCreateProject( std::string name, std::string path );

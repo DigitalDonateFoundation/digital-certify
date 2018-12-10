@@ -30,10 +30,11 @@ namespace certify {
 		~Project_P();
 
 	public:
+		std::string GetGCID( bool upper_case = false );
 		std::vector<ProjectItem*> GetAllProject();
 		int32_t LoadExistProject( std::string dbf_path );
-		bool CreateProject( std::string name, std::string path );
 		bool CanCreateProject( std::string name, std::string path );
+		ProjectItem* CreateProject( std::string name, std::string path );
 
 	private:
 		SQLite::Database* m_db_project;
