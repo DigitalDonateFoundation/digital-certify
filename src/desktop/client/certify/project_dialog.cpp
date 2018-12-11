@@ -103,13 +103,13 @@ namespace certify {
 			ProjectItem* project_item = vec_project[i];
 			QStandardItem* item = new QStandardItem;
 			UserData user_data;
-			user_data.m_project_name = QString::fromLocal8Bit( project_item->m_name.c_str() );
-			user_data.m_project_gcid = QString::fromLocal8Bit( "Create：2018-12-10 12:23:56" );
+			user_data.m_project_name = QString::fromLocal8Bit( project_item->GetName().c_str() );
+			user_data.m_project_create_time = QString::fromLocal8Bit( project_item->GetCreateTime().c_str() );
 			item->setData( DEF_PROJECT_STATUS_CREATE, DEF_USER_ROLE_PROJECT_STATUS ); // 单一存取
 			item->setData( QVariant::fromValue( user_data ), DEF_USER_ROLE_PROJECT_USERDATA ); // 整体存取
 			std::string tool_tip = "";
-			FormatLibrary::StandardLibrary::FormatTo( tool_tip, "{0}\n{1}", project_item->m_gcid, project_item->m_path );
-			item->setToolTip( QString( tool_tip.c_str() ));
+			FormatLibrary::StandardLibrary::FormatTo( tool_tip, "{0}\n{1}", project_item->GetGCID(), project_item->GetPath() );
+			item->setToolTip( QString::fromLocal8Bit( tool_tip.c_str() ) );
 			m_item_model->appendRow( item );
 		}
 
@@ -121,12 +121,12 @@ namespace certify {
 		if( project_item != nullptr ) {
 			QStandardItem* item = new QStandardItem;
 			UserData user_data;
-			user_data.m_project_name = QString::fromLocal8Bit( project_item->m_name.c_str() );
-			user_data.m_project_gcid = QString::fromLocal8Bit( project_item->m_gcid.c_str() );
+			user_data.m_project_name = QString::fromLocal8Bit( project_item->GetName().c_str() );
+			user_data.m_project_create_time = QString::fromLocal8Bit( project_item->GetCreateTime().c_str() );
 			item->setData( DEF_PROJECT_STATUS_CREATE, DEF_USER_ROLE_PROJECT_STATUS ); // 单一存取
 			item->setData( QVariant::fromValue( user_data ), DEF_USER_ROLE_PROJECT_USERDATA ); // 整体存取
 			std::string tool_tip = "";
-			FormatLibrary::StandardLibrary::FormatTo( tool_tip, "{0}\n{1}", project_item->m_gcid, project_item->m_path );
+			FormatLibrary::StandardLibrary::FormatTo( tool_tip, "{0}\n{1}", project_item->GetGCID(), project_item->GetPath() );
 			item->setToolTip( QString::fromLocal8Bit( tool_tip.c_str() ) );
 			m_item_model->appendRow( item );
 			return true;
@@ -185,7 +185,7 @@ namespace certify {
 	void ProjectDialog::OnProjectListItemDoubleClicked( const QModelIndex& index ) {
 		int32_t status = index.data( DEF_USER_ROLE_PROJECT_STATUS ).toInt();
 		UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
-		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString( "DoubleClicked: %1 %2 %3 %4" ).arg( index.row() ).arg( status ).arg( user_data.m_project_name ).arg( user_data.m_project_gcid ) );
+		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString( "DoubleClicked: %1 %2 %3 %4" ).arg( index.row() ).arg( status ).arg( user_data.m_project_name ).arg( user_data.m_project_create_time ) );
 
 		// 在使用代理模型后，由于开启了动态排序模式，如果修改代理模型的数据，在第一个item修改数据后可能就不在当前过滤模型中，会被过滤掉，后面的item的QModelIndex就会变化，导致后续的修改失败。
 		// 有两个方法可处理，一是不修改代理模型而是直接修改源模型的数据，二是在修改模型数据的时候关闭代理模型的动态排序功能修改完再开启。

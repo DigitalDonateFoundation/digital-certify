@@ -25,6 +25,49 @@
 
 namespace certify {
 
+	ProjectItem_P::ProjectItem_P( std::string gcid, std::string name, std::string path )
+	: m_gcid( gcid )
+	, m_name( name )
+	, m_path( path )
+	, m_home( m_path + "/.certify" )
+	, m_create_time( std::chrono::system_clock::now() ) {
+	}
+
+	ProjectItem_P::~ProjectItem_P() {
+	}
+
+	std::string ProjectItem_P::GetGCID() {
+		return m_gcid;
+	}
+
+	std::string ProjectItem_P::GetName() {
+		return m_name;
+	}
+
+	std::string ProjectItem_P::GetPath() {
+		return m_path;
+	}
+
+	std::string ProjectItem_P::GetHome() {
+		return m_home;
+	}
+
+	std::string ProjectItem_P::GetCreateTime() {
+		std::time_t create_time_t = std::chrono::system_clock::to_time_t( m_create_time );
+		tm create_time_tm;
+		localtime_s( &create_time_tm, &create_time_t );
+		char create_time_buffer[64] = { 0 };
+		strftime( create_time_buffer, 64, "%Y-%m-%d %H:%M:%S", &create_time_tm );
+		return std::string( create_time_buffer );
+	}
+
+	void ProjectItem_P::SetCreateTime( std::string create_time ) {
+		tm create_time_tm;
+		std::istringstream iss( create_time );
+		iss >> std::get_time( &create_time_tm, "%Y-%m-%d %H:%M:%S" );
+		m_create_time = std::chrono::system_clock::from_time_t( std::mktime( &create_time_tm ) );
+	}
+
 	Project_P::Project_P()
 	: m_db_project( nullptr )
 	, m_log_cate( "<PROJECT>" ) {
@@ -95,19 +138,22 @@ namespace certify {
 			std::string ret_create_time = "";
 			SQLite::Statement query( *m_db_project, "SELECT id, gcid, name, path, create_time FROM project ORDER BY id ASC" );
 			while( query.executeStep() ) {
-				project_count++; //
 				ret_id = query.getColumn( 0 ).getInt();
 				ret_gcid = query.getColumn( 1 ).getText();
 				ret_name = basicx::StringToGB2312( query.getColumn( 2 ).getText() ); // 中文 UTF8 还原
 				ret_path = basicx::StringToGB2312( query.getColumn( 3 ).getText() ); // 中文 UTF8 还原
 				ret_create_time = query.getColumn( 4 ).getText();
+
 				ProjectItem* project_item = new ProjectItem( ret_gcid, ret_name, ret_path );
-				// TODO：ret_create_time
+				project_item->SetCreateTime( ret_create_time );
+
 				m_vec_project.push_back( project_item );
 				m_map_project[ret_gcid] = project_item;
 				m_map_project_name[ret_name] = ret_name;
 				m_map_project_path[ret_path] = ret_path;
-				FormatLibrary::StandardLibrary::FormatTo( log_info, "从项目信息库表获取：{0} {1} {2} {3} {4}", ret_id, ret_gcid, ret_name, ret_path, ret_create_time );
+
+				project_count++; //
+				FormatLibrary::StandardLibrary::FormatTo( log_info, "从项目信息库表获取：{0} {1} {2} {3}", ret_id, ret_gcid, ret_name, ret_path );
 				m_syslog->LogWrite( basicx::syslog_level::c_info, m_log_cate, log_info );
 			}
 			query.reset();
@@ -148,10 +194,9 @@ namespace certify {
 		if( m_db_project != nullptr ) {
 			try {
 				ProjectItem* project_item = new ProjectItem( gcid, name, path );
-				std::string create_time = project_item->GetCreateTime();
 
 				SQLite::Statement query( *m_db_project, "INSERT INTO project ( gcid, name, path, create_time ) VALUES ( ?, ?, ?, ? )" );
-				SQLite::bind( query, gcid, basicx::StringToUTF8( name ), basicx::StringToUTF8( path ), create_time ); // 中文 UTF8 转换
+				SQLite::bind( query, gcid, basicx::StringToUTF8( name ), basicx::StringToUTF8( path ), project_item->GetCreateTime() ); // 中文 UTF8 转换
 				if( query.exec() != 1 ) {
 					FormatLibrary::StandardLibrary::FormatTo( log_info, "添加项目信息记录失败！{0} {1} {2}", gcid, name, path );
 					m_syslog->LogWrite( basicx::syslog_level::c_error, m_log_cate, log_info );
@@ -163,6 +208,9 @@ namespace certify {
 				m_map_project_name[name] = name;
 				m_map_project_path[path] = path;
 
+				FormatLibrary::StandardLibrary::FormatTo( log_info, "新建项目添加完成：{0} {1} {2}", gcid, name, path );
+				m_syslog->LogWrite( basicx::syslog_level::c_info, m_log_cate, log_info );
+
 				return project_item;
 			}
 			catch( std::exception& e ) {
@@ -173,6 +221,45 @@ namespace certify {
 		}
 
 		return nullptr;
+	}
+
+	ProjectItem::ProjectItem( std::string gcid, std::string name, std::string path )
+	: m_project_item_p( nullptr ) {
+		try {
+			m_project_item_p = new ProjectItem_P( gcid, name, path );
+		}
+		catch( ... ) {}
+	}
+
+	ProjectItem::~ProjectItem() {
+		if( m_project_item_p != nullptr ) {
+			delete m_project_item_p;
+			m_project_item_p = nullptr;
+		}
+	}
+
+	std::string ProjectItem::GetGCID() {
+		return m_project_item_p->GetGCID();
+	}
+
+	std::string ProjectItem::GetName() {
+		return m_project_item_p->GetName();
+	}
+
+	std::string ProjectItem::GetPath() {
+		return m_project_item_p->GetPath();
+	}
+
+	std::string ProjectItem::GetHome() {
+		return m_project_item_p->GetHome();
+	}
+
+	std::string ProjectItem::GetCreateTime() {
+		return m_project_item_p->GetCreateTime();
+	}
+
+	void ProjectItem::SetCreateTime( std::string create_time ) {
+		m_project_item_p->SetCreateTime( create_time );
 	}
 
 	Project* Project::m_instance = nullptr;

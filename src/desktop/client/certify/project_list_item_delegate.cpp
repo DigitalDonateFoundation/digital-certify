@@ -66,7 +66,7 @@ namespace certify {
 
 			// 绘制数据位置
 			QRect rect_name = QRect( rect.left() + 20, rect.top() + 5, rect.width() - 30, 20 );
-			QRect rect_gcid = QRect( rect.left() + 20, rect.bottom() - 20, rect.width() - 10, 20 );
+			QRect rect_create_time = QRect( rect.left() + 20, rect.bottom() - 20, rect.width() - 10, 20 );
 			QRect circle = QRect( rect.left() + 5, rect.top() + 10, 10, 10 );
 			
 			switch( status ) {
@@ -95,8 +95,8 @@ namespace certify {
 			painter->drawText( rect_name, Qt::AlignLeft, user_data.m_project_name ); // 绘制名字
 
 			painter->setPen( QPen( Qt::gray ) );
-			painter->setFont( QFont( "SimSun", 9 ) );
-			painter->drawText( rect_gcid, Qt::AlignLeft, user_data.m_project_gcid ); // 绘制标识
+			painter->setFont( QFont( "Times", 9 ) );
+			painter->drawText( rect_create_time, Qt::AlignLeft, user_data.m_project_create_time ); // 绘制创建时间
 
 			painter->restore();
 		}

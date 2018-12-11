@@ -24,6 +24,27 @@
 
 namespace certify {
 
+	class ProjectItem_P {
+	public:
+		ProjectItem_P( std::string gcid, std::string name, std::string path );
+		~ProjectItem_P();
+
+	public:
+		std::string GetGCID();
+		std::string GetName();
+		std::string GetPath();
+		std::string GetHome();
+		std::string GetCreateTime();
+		void SetCreateTime( std::string create_time );
+
+	private:
+		std::string m_gcid;
+		std::string m_name;
+		std::string m_path;
+		std::string m_home;
+		std::chrono::system_clock::time_point m_create_time;
+	};
+
 	class Project_P {
 	public:
 		Project_P();
