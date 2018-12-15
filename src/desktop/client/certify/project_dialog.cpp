@@ -23,9 +23,10 @@ namespace certify {
 	, m_item_model( nullptr )
 	, m_proxy_model( nullptr )
 	, m_menu_list( nullptr )
-	, m_action_list_test( nullptr )
+	, m_action_new_project( nullptr )
 	, m_action_list_text( nullptr )
 	, m_layout_v( nullptr )
+	, m_create_project_dialog( nullptr )
 	, m_project( nullptr )
 	, m_path_app_folder( "" )
 	, m_path_cfg_folder( "" )
@@ -84,7 +85,10 @@ namespace certify {
 
 		setLayout( m_layout_v );
 
-		// 列表菜单选项 m_action_list_test 根据是否选中由 OnShowListMenu() 进行动态显示
+		m_create_project_dialog = new CreateProjectDialog( this );
+		m_create_project_dialog->hide();
+
+		// 列表菜单选项 m_action_new_project 根据是否选中由 OnShowListMenu() 进行动态显示
 		// 列表菜单选项 m_action_list_text 根据是否选中由 OnShowListMenu() 进行动态显示
 		QObject::connect( m_list_view, SIGNAL( customContextMenuRequested( const QPoint& ) ), this, SLOT( OnShowListMenu( const QPoint& ) ) ); // 需要 setContextMenuPolicy( Qt::CustomContextMenu ) 列表
 		QObject::connect( m_list_view, SIGNAL( doubleClicked( const QModelIndex& ) ), this, SLOT( OnProjectListItemDoubleClicked( const QModelIndex& ) ) ); // 单击会与此冲突
@@ -138,14 +142,33 @@ namespace certify {
 		return m_project->CanCreateProject( name, path );
 	}
 
-	void ProjectDialog::OnActionListTest() {
-		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "Test" ) );
-	}
-
 	void ProjectDialog::OnActionListText() {
 		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "Text" ) );
 
 //		m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_MODIFY ) ); // 测试：仅显示黄色项 // setFilterFixedString( QString() ) 还原
+	}
+
+	void ProjectDialog::OnActionNewProject() {
+		if( m_create_project_dialog != nullptr ) {
+			if( QDialog::Accepted == m_create_project_dialog->exec() ) {
+				std::string project_name = m_create_project_dialog->m_project_name;
+				std::string project_path = m_create_project_dialog->m_project_path;
+				if( "" == project_name ) {
+					QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "新建项目 名称 为空！" ) );
+				}
+				else if( "" == project_path ) {
+					QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "新建项目 路径 为空！" ) );
+				}
+				else if( false == CanCreateProject( project_name, project_path ) ) {
+					QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "项目名称 或 项目路径 已经存在，无法新建项目！" ) );
+				}
+				else {
+					if( false == CreateProject( project_name, project_path ) ) {
+						QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "新建项目失败！" ) );
+					}
+				}
+			}
+		}
 	}
 
 	void ProjectDialog::OnShowListMenu( const QPoint& point ) {
@@ -158,16 +181,16 @@ namespace certify {
 
 		QModelIndexList list_model_index = m_list_view->selectionModel()->selectedIndexes(); // 单行或多行
 		if( list_model_index.size() > 0 ) { // 选中行
-			m_action_list_test = m_menu_list->addAction( QString::fromLocal8Bit( "选中" ) );
-			m_action_list_test->setIcon( QIcon( ":/certify/resource/certify.ico" ) );
-			QObject::connect( m_action_list_test, SIGNAL( triggered() ), this, SLOT( OnActionListTest() ) );
+			m_action_list_text = m_menu_list->addAction( QString::fromLocal8Bit( "选中" ) );
+			m_action_list_text->setIcon( QIcon( ":/certify/resource/certify.ico" ) );
+			QObject::connect( m_action_list_text, SIGNAL( triggered() ), this, SLOT( OnActionListText() ) );
 
 //			m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_ERRORS ) ); // 测试：仅显示红色项 // setFilterFixedString( QString() ) 还原
 		}
 		else { // 未选中
-			m_action_list_test = m_menu_list->addAction( QString::fromLocal8Bit( "未选" ) );
-			m_action_list_test->setIcon( QIcon( ":/certify/resource/certify.ico" ) );
-			QObject::connect( m_action_list_test, SIGNAL( triggered() ), this, SLOT( OnActionListTest() ) );
+			m_action_new_project = m_menu_list->addAction( QString::fromLocal8Bit( "新建" ) );
+			m_action_new_project->setIcon( QIcon( ":/certify/resource/action_new_project.ico" ) );
+			QObject::connect( m_action_new_project, SIGNAL( triggered() ), this, SLOT( OnActionNewProject() ) );
 
 //			m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_COMMIT ) ); // 测试：仅显示绿色项 // setFilterFixedString( QString() ) 还原
 		}

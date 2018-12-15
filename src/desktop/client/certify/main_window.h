@@ -20,6 +20,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QAction>
+#include <QtWidgets/QMdiArea>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QTextEdit>
@@ -36,7 +37,8 @@
 #include "about_dialog.h"
 #include "infos_dialog.h"
 #include "project_dialog.h"
-#include "create_project_dialog.h"
+
+#include "mdichild.h"
 
 namespace certify {
 
@@ -78,6 +80,9 @@ namespace certify {
 		void ShowDockWidget_3( bool show );
 		void OnActionSaveLayout( bool save );
 
+		void newFile();
+		MdiChild *createMdiChild();
+
 	protected:
 		void closeEvent( QCloseEvent* event );
 		bool eventFilter( QObject* target, QEvent* event ) override;
@@ -114,7 +119,7 @@ namespace certify {
 		QToolBar* m_main_tool_bar;
 		QStatusBar* m_status_bar;
 
-		QWidget* m_main_widget; // 必须，否则底部停靠栏高度会无法向下调整
+		QMdiArea* m_mdi_area;
 
 		QLabel* m_label_logo;
 		QLabel* m_label_info;
@@ -132,7 +137,6 @@ namespace certify {
 		AboutDialog* m_about_dialog;
 		InfosDialog* m_infos_dialog;
 		ProjectDialog* m_project_dialog;
-		CreateProjectDialog* m_create_project_dialog;
 
 	private:
 		std::string m_log_cate;

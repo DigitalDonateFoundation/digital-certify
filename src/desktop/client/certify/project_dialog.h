@@ -20,6 +20,7 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 
+#include "create_project_dialog.h"
 #include "project_list_item_delegate.h"
 
 namespace certify {
@@ -39,8 +40,10 @@ namespace certify {
 		bool CreateProject( std::string name, std::string path );
 		bool CanCreateProject( std::string name, std::string path );
 
+	public slots:
+		void OnActionNewProject();
+
 	private slots:
-		void OnActionListTest();
 		void OnActionListText();
 		void OnShowListMenu( const QPoint& point );
 		void OnProjectListItemDoubleClicked( const QModelIndex& index );
@@ -50,9 +53,10 @@ namespace certify {
 		QStandardItemModel* m_item_model;
 		QSortFilterProxyModel* m_proxy_model;
 		QMenu* m_menu_list;
-		QAction* m_action_list_test;
+		QAction* m_action_new_project;
 		QAction* m_action_list_text;
 		QVBoxLayout* m_layout_v;
+		CreateProjectDialog* m_create_project_dialog;
 
 	private:
 		Project* m_project;

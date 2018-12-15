@@ -51,7 +51,7 @@ namespace certify {
 	, m_menu_help( nullptr )
 	, m_main_tool_bar( nullptr )
 	, m_status_bar( nullptr )
-	, m_main_widget( nullptr )
+	, m_mdi_area( nullptr )
 	, m_label_logo( nullptr )
 	, m_label_info( nullptr )
 	, m_label_time( nullptr )
@@ -65,7 +65,6 @@ namespace certify {
 	, m_about_dialog( nullptr )
 	, m_infos_dialog( nullptr )
 	, m_project_dialog( nullptr )
-	, m_create_project_dialog( nullptr )
 	, m_log_cate( "<WINDOW>" ) {
 		m_syslog = basicx::SysLog_S::GetInstance();
 		CreateActions();
@@ -195,10 +194,24 @@ namespace certify {
 		m_main_tool_bar->installEventFilter( this ); // 监视其关闭事件
 		addToolBar( Qt::TopToolBarArea, m_main_tool_bar );
 
-		// 必须，否则底部停靠栏高度会无法向下调整
-		m_main_widget = new QWidget( this );
-		m_main_widget->setFixedWidth( 0 ); // 使用 hide() 无效
-		setCentralWidget( m_main_widget );
+		m_mdi_area = new QMdiArea( this );
+		m_mdi_area->setActivationOrder( QMdiArea::CreationOrder ); // 设置激活顺序 CreationOrder、StackingOrder、ActivationHistoryOrder
+		//m_mdi_area->setBackground( QColor( 192, 192, 192 ) ); // 设置背景，默认灰色
+		//m_mdi_area->setDocumentMode( false ); // 设置文档模式，在 macOS 中 tabs 会类似 Safari 的 Terminal
+		//m_mdi_area->setOption( QMdiArea::DontMaximizeSubWindowOnActivation, false ); // 只有一个选项，即创建子窗口时不充满整个区域，默认 false 充满
+		m_mdi_area->setViewMode( QMdiArea::TabbedView ); // 视图模式 SubWindowView、TabbedView
+		m_mdi_area->setTabPosition( QTabWidget::North ); // 标签页位置 North、South、West、East
+		m_mdi_area->setTabShape( QTabWidget::Rounded ); // 标签页样式 Rounded、Triangular
+		m_mdi_area->setTabsClosable( true ); // 是否可关闭
+		m_mdi_area->setTabsMovable( true ); // 是否可移动
+		m_mdi_area->setHorizontalScrollBarPolicy( Qt::ScrollBarAsNeeded );
+		m_mdi_area->setVerticalScrollBarPolicy( Qt::ScrollBarAsNeeded );
+		// 在 QMdiArea 的 ViewMode 设为 TabbedView 后才会存在 QTabBar
+		QList<QTabBar*> list_tab_bar = m_mdi_area->findChildren<QTabBar*>();
+		for( QList<QTabBar*>::Iterator it_tb = list_tab_bar.begin(); it_tb != list_tab_bar.end(); ++it_tb ) {
+			(*it_tb)->setExpanding( false ); // 向左靠拢，不填满整个标签页
+		}
+		setCentralWidget( m_mdi_area );
 
 		m_label_logo = new QLabel( THE_APP_NAME, this );
 		m_label_logo->setStyleSheet( "color:rgb(128,0,0);font:bold;" );
@@ -243,7 +256,7 @@ namespace certify {
 		m_dock_widget_1->setWidget( m_text_edit_1 );
 		m_dock_widget_1->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
 		m_dock_widget_1->installEventFilter( this ); // 监视其关闭事件
-		addDockWidget( Qt::TopDockWidgetArea, m_dock_widget_1 );
+		addDockWidget( Qt::RightDockWidgetArea, m_dock_widget_1 );
 		m_vec_dock_widget.push_back( m_dock_widget_1 );
 
 		m_dock_widget_2 = new QDockWidget( this );
@@ -276,9 +289,6 @@ namespace certify {
 		m_action_save_layout->setChecked( true );
 		m_action_auto_start->setChecked( false );
 
-		m_create_project_dialog = new CreateProjectDialog( this );
-		m_create_project_dialog->hide();
-
 		QObject::connect( m_action_new_project, SIGNAL( triggered() ), this, SLOT( OnActionNewProject() ) );
 		QObject::connect( m_action_exit, SIGNAL( triggered() ), this, SLOT( OnActionExit() ) );
 		QObject::connect( m_action_about, SIGNAL( triggered() ), this, SLOT( OnActionAbout() ) );
@@ -308,7 +318,7 @@ namespace certify {
 			restoreState( settings.value( "MainWindowLayout" ).toByteArray() );
 			restoreGeometry( settings.value( "MainWindowGeometry" ).toByteArray() );
 
-			m_main_widget->restoreGeometry( settings.value( "MainWidgetGeometry" ).toByteArray() );
+			m_mdi_area->restoreGeometry( settings.value( "MainWidgetGeometry" ).toByteArray() );
 
 			m_action_show_tool_bar_main->setChecked( settings.value( "ActionShowTool_Main" ).toBool() );
 			m_action_show_dock_project->setChecked( settings.value( "ActionShowDock_Project" ).toBool() );
@@ -337,7 +347,7 @@ namespace certify {
 			settings.setValue( "MainWindowLayout", saveState() );
 			settings.setValue( "MainWindowGeometry", saveGeometry() );
 
-			settings.setValue( "MainWidgetGeometry", m_main_widget->saveGeometry() );
+			settings.setValue( "MainWidgetGeometry", m_mdi_area->saveGeometry() );
 
 			settings.setValue( "ActionShowTool_Main", m_action_show_tool_bar_main->isChecked() );
 			settings.setValue( "ActionShowDock_Project", m_action_show_dock_project->isChecked() );
@@ -442,26 +452,8 @@ namespace certify {
 	}
 
 	void MainWindow::OnActionNewProject() {
-		if( m_create_project_dialog != nullptr ) {
-			if( QDialog::Accepted == m_create_project_dialog->exec() ) {
-				std::string project_name = m_create_project_dialog->m_project_name;
-				std::string project_path = m_create_project_dialog->m_project_path;
-				if( "" == project_name ) {
-					QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "新建项目 名称 为空！" ) );
-				}
-				else if( "" == project_path ) {
-					QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "新建项目 路径 为空！" ) );
-				}
-				else if( false == m_project_dialog->CanCreateProject( project_name, project_path ) ) {
-					QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "项目名称 或 项目路径 已经存在，无法新建项目！" ) );
-				}
-				else {
-					if( false == m_project_dialog->CreateProject( project_name, project_path ) ) {
-						QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "新建项目失败！" ) );
-					}
-				}
-			}
-		}
+		m_project_dialog->OnActionNewProject();
+		newFile(); // test
 	}
 
 	void MainWindow::OnActionExit() {
@@ -587,6 +579,49 @@ namespace certify {
 			m_syslog->LogWrite( basicx::syslog_level::c_info, m_log_cate, log_info );
 			QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "在系统退出时将 忽略 窗口布局。" ) );
 		}
+	}
+
+	void MainWindow::newFile() { // test
+		MdiChild *child = createMdiChild();
+		child->newFile();
+		child->show();
+	}
+
+	MdiChild *MainWindow::createMdiChild() { // test
+		MdiChild *child = new MdiChild;
+		m_mdi_area->addSubWindow( child );
+		
+		//mdiWin1 = new QMdiSubWindow;
+		//mdiWin1->setWindowTitle( "未定" );
+		//ui->mdiArea->addSubWindow( mdiWin1 );
+		//mdiWin1->resize( QSize( 200, 200 ) );
+		//mdiWin1->show();
+		//setActiveSubWindow( QMdiSubWindow *window );     设置active窗口
+
+//#ifndef QT_NO_CLIPBOARD
+//		connect( child, &QTextEdit::copyAvailable, cutAct, &QAction::setEnabled );
+//		connect( child, &QTextEdit::copyAvailable, copyAct, &QAction::setEnabled );
+//#endif
+
+		return child;
+
+		//Public Slots
+		//	void    activateNextSubWindow()
+		//	void    activatePreviousSubWindow()
+		//	void    cascadeSubWindows()
+		//	void    closeActiveSubWindow()
+		//	void    closeAllSubWindows()
+		//	void    setActiveSubWindow( QMdiSubWindow * window )
+		//	void    tileSubWindows()//将所有子窗口在area的可视部分排列整齐
+		//Signals
+		//	void    subWindowActivated( QMdiSubWindow * window )//切换激活的窗口时发出
+
+		//connect( m_mdi_area, &QMdiArea::subWindowActivated, this, &MainWindow::updateMenus );
+
+		//首先removeSubWindow，不会删除widget，再有就是点击subWindow的close 按钮，mdi不会调用removeSubWindow，只是隐藏widget，要重新显示subWindow，只用subWindow->showNormal(), form->show();
+		//想隐藏也可以直接调用subWindow的hide（）函数
+		//正统的关闭和显示是addSubWindow和removeSubWindow的成对调用。
+		//可以设置设置subWindow和其widget的WA_DeleteOnClose属性，关闭时会删除subWindow和其widget，再显示时复制创建form和subWindow，这种情况在有些情况下还是有必要的，至少节约内存
 	}
 
 	// 如果有导入注册表之类的系统提示，可能需要 工程->属性->链接器->清单文件->UAC执行级别->requireAdministrator 以获取管理员权限
