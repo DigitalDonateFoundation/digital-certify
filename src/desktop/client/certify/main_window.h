@@ -12,6 +12,8 @@
 #ifndef CERTIFY_CERTIFY_MIAN_WINDOW_H
 #define CERTIFY_CERTIFY_MIAN_WINDOW_H
 
+#include <map>
+
 #include <QtGui/QCloseEvent>
 #include <QtGui/QKeySequence>
 #include <QtCore/QTimer>
@@ -29,6 +31,7 @@
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QMdiSubWindow>
 #include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QSystemTrayIcon>
 
@@ -37,8 +40,7 @@
 #include "about_dialog.h"
 #include "infos_dialog.h"
 #include "project_dialog.h"
-
-#include "mdichild.h"
+#include "project_list_dialog.h"
 
 namespace certify {
 
@@ -79,12 +81,10 @@ namespace certify {
 		void ShowDockWidget_2( bool show );
 		void ShowDockWidget_3( bool show );
 		void OnActionSaveLayout( bool save );
-
-		void newFile();
-		MdiChild *createMdiChild();
+		void OnSelectProjectLabel( QMdiSubWindow* mdi_sub_window );
 
 	protected:
-		void closeEvent( QCloseEvent* event );
+		void closeEvent( QCloseEvent* event ) override;
 		bool eventFilter( QObject* target, QEvent* event ) override;
 
 	private:
@@ -136,7 +136,7 @@ namespace certify {
 		QTextEdit* m_text_edit_3;
 		AboutDialog* m_about_dialog;
 		InfosDialog* m_infos_dialog;
-		ProjectDialog* m_project_dialog;
+		ProjectListDialog* m_project_list_dialog;
 
 	private:
 		std::string m_log_cate;

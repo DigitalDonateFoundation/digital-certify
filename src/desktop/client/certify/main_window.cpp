@@ -64,7 +64,7 @@ namespace certify {
 	, m_text_edit_3( nullptr )
 	, m_about_dialog( nullptr )
 	, m_infos_dialog( nullptr )
-	, m_project_dialog( nullptr )
+	, m_project_list_dialog( nullptr )
 	, m_log_cate( "<WINDOW>" ) {
 		m_syslog = basicx::SysLog_S::GetInstance();
 		CreateActions();
@@ -234,7 +234,7 @@ namespace certify {
 
 		QMainWindow::setDockOptions( AnimatedDocks | AllowNestedDocks | AllowTabbedDocks );
 
-		m_project_dialog = new ProjectDialog( this );
+		m_project_list_dialog = new ProjectListDialog( this );
 		m_text_edit_1 = new QTextEdit( this );
 		m_text_edit_2 = new QTextEdit( this );
 		m_text_edit_3 = new QTextEdit( this );
@@ -243,7 +243,7 @@ namespace certify {
 		m_dock_widget_project->setObjectName( "DockWidget_Project" ); //
 		m_dock_widget_project->setContentsMargins( -1, -1, -1, -1 );
 		m_dock_widget_project->setWindowTitle( QString::fromLocal8Bit( "项目列表" ) );
-		m_dock_widget_project->setWidget( m_project_dialog );
+		m_dock_widget_project->setWidget( m_project_list_dialog );
 		m_dock_widget_project->setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
 		m_dock_widget_project->installEventFilter( this ); // 监视其关闭事件
 		addDockWidget( Qt::LeftDockWidgetArea, m_dock_widget_project );
@@ -289,6 +289,8 @@ namespace certify {
 		m_action_save_layout->setChecked( true );
 		m_action_auto_start->setChecked( false );
 
+		installEventFilter( this ); // 监视自身事件
+
 		QObject::connect( m_action_new_project, SIGNAL( triggered() ), this, SLOT( OnActionNewProject() ) );
 		QObject::connect( m_action_exit, SIGNAL( triggered() ), this, SLOT( OnActionExit() ) );
 		QObject::connect( m_action_about, SIGNAL( triggered() ), this, SLOT( OnActionAbout() ) );
@@ -300,8 +302,9 @@ namespace certify {
 		QObject::connect( m_action_show_dock_3, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_3( bool ) ) );
 		QObject::connect( m_action_save_layout, SIGNAL( triggered( bool ) ), this, SLOT( OnActionSaveLayout( bool ) ) );
 		QObject::connect( m_action_auto_start, SIGNAL( triggered( bool ) ), this, SLOT( OnActionAutoStart( bool ) ) );
+		QObject::connect( m_mdi_area, SIGNAL( subWindowActivated( QMdiSubWindow* ) ), this, SLOT( OnSelectProjectLabel( QMdiSubWindow* ) ) );
 
-		m_project_dialog->LoadExistProject();
+		m_project_list_dialog->LoadExistProject();
 	}
 
 	// QDockWidget 和 QToolBar 都需设置对象名，这样才能 saveState() 和 restoreState() 状态、位置、大小等
@@ -452,14 +455,14 @@ namespace certify {
 	}
 
 	void MainWindow::OnActionNewProject() {
-		m_project_dialog->OnActionNewProject();
-		newFile(); // test
+		m_project_list_dialog->OnActionNewProject();
 	}
 
 	void MainWindow::OnActionExit() {
 		if( QMessageBox::Yes == QMessageBox::question( this, QString::fromLocal8Bit( "询问" ), QString::fromLocal8Bit( "确认退出系统？" ) ) ) {
 			m_user_exit = true;
 			WriteSettings(); // 保存界面属性
+			m_mdi_area->closeAllSubWindows();
 			CloseFloatDockWidget(); // 否则有浮动停靠栏或工具栏时可能导致崩溃
 			QApplication::setQuitOnLastWindowClosed( true );
 			m_tray_icon->hide();
@@ -581,49 +584,6 @@ namespace certify {
 		}
 	}
 
-	void MainWindow::newFile() { // test
-		MdiChild *child = createMdiChild();
-		child->newFile();
-		child->show();
-	}
-
-	MdiChild *MainWindow::createMdiChild() { // test
-		MdiChild *child = new MdiChild;
-		m_mdi_area->addSubWindow( child );
-		
-		//mdiWin1 = new QMdiSubWindow;
-		//mdiWin1->setWindowTitle( "未定" );
-		//ui->mdiArea->addSubWindow( mdiWin1 );
-		//mdiWin1->resize( QSize( 200, 200 ) );
-		//mdiWin1->show();
-		//setActiveSubWindow( QMdiSubWindow *window );     设置active窗口
-
-//#ifndef QT_NO_CLIPBOARD
-//		connect( child, &QTextEdit::copyAvailable, cutAct, &QAction::setEnabled );
-//		connect( child, &QTextEdit::copyAvailable, copyAct, &QAction::setEnabled );
-//#endif
-
-		return child;
-
-		//Public Slots
-		//	void    activateNextSubWindow()
-		//	void    activatePreviousSubWindow()
-		//	void    cascadeSubWindows()
-		//	void    closeActiveSubWindow()
-		//	void    closeAllSubWindows()
-		//	void    setActiveSubWindow( QMdiSubWindow * window )
-		//	void    tileSubWindows()//将所有子窗口在area的可视部分排列整齐
-		//Signals
-		//	void    subWindowActivated( QMdiSubWindow * window )//切换激活的窗口时发出
-
-		//connect( m_mdi_area, &QMdiArea::subWindowActivated, this, &MainWindow::updateMenus );
-
-		//首先removeSubWindow，不会删除widget，再有就是点击subWindow的close 按钮，mdi不会调用removeSubWindow，只是隐藏widget，要重新显示subWindow，只用subWindow->showNormal(), form->show();
-		//想隐藏也可以直接调用subWindow的hide（）函数
-		//正统的关闭和显示是addSubWindow和removeSubWindow的成对调用。
-		//可以设置设置subWindow和其widget的WA_DeleteOnClose属性，关闭时会删除subWindow和其widget，再显示时复制创建form和subWindow，这种情况在有些情况下还是有必要的，至少节约内存
-	}
-
 	// 如果有导入注册表之类的系统提示，可能需要 工程->属性->链接器->清单文件->UAC执行级别->requireAdministrator 以获取管理员权限
 	void MainWindow::OnActionAutoStart( bool start ) {
 #ifdef __OS_WINDOWS__
@@ -648,6 +608,12 @@ namespace certify {
 #endif
 	}
 
+	void MainWindow::OnSelectProjectLabel( QMdiSubWindow* mdi_sub_window ) {
+		ProjectDialog* project_dialog = qobject_cast<ProjectDialog*>( mdi_sub_window->widget() );
+		m_project_list_dialog->SetCurrentProject( project_dialog->m_project_gcid );
+		//QMessageBox::question( this, QString::fromLocal8Bit( "测试" ), QString::fromLocal8Bit( project_dialog->m_project_gcid.c_str() ) );
+	}
+
 	void MainWindow::closeEvent( QCloseEvent* event ) {
 		if( false == m_user_exit ) {
 			//QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "程序将继续运行，如需退出，请右击托盘图标。" ) );
@@ -657,6 +623,42 @@ namespace certify {
 	}
 
 	bool MainWindow::eventFilter( QObject* target, QEvent* event ) {
+		if( event->type() == ProjectListItemDoubleClickedEvent::m_type ) {
+			ProjectListItemDoubleClickedEvent* event_item = dynamic_cast<ProjectListItemDoubleClickedEvent*>( event );
+			std::string project_gcid = event_item->m_gcid;
+			bool is_mdi_sub_window_exist = false;
+			QList<QMdiSubWindow*> list_mdi_window = m_mdi_area->subWindowList();
+			for( int32_t i = 0; i < list_mdi_window.size(); ++i ) {
+				QMdiSubWindow* mdi_sub_window = list_mdi_window.at( i );
+				ProjectDialog* project_dialog = qobject_cast<ProjectDialog*>( mdi_sub_window->widget() );
+				if( project_dialog->m_project_gcid == project_gcid ) {
+					is_mdi_sub_window_exist = true;
+					m_mdi_area->setActiveSubWindow( mdi_sub_window );
+					break;
+				}
+			}
+			if( false == is_mdi_sub_window_exist ) {
+				ProjectDialog* project_dialog = new ProjectDialog( project_gcid );
+				m_mdi_area->addSubWindow( project_dialog );
+				project_dialog->show();
+			}
+
+			//首先removeSubWindow，不会删除widget，再有就是点击subWindow的close 按钮，mdi不会调用removeSubWindow，只是隐藏widget，要重新显示subWindow，只用subWindow->showNormal(), form->show();
+			//想隐藏也可以直接调用subWindow的hide（）函数
+			//正统的关闭和显示是addSubWindow和removeSubWindow的成对调用。
+			//可以设置设置subWindow和其widget的WA_DeleteOnClose属性，关闭时会删除subWindow和其widget，再显示时复制创建form和subWindow，这种情况在有些情况下还是有必要的，至少节约内存
+
+			//Public Slots
+			//	void activateNextSubWindow()
+			//	void activatePreviousSubWindow()
+			//	void cascadeSubWindows()
+			//	void closeActiveSubWindow()
+			//	void closeAllSubWindows()
+			//	void setActiveSubWindow( QMdiSubWindow* window )
+			//	void tileSubWindows() // 将所有子窗口在 area 的可视部分排列整齐
+			//Signals
+			//	void subWindowActivated( QMdiSubWindow* window ) // 切换激活的窗口时发出
+		}
 		if( event->type() == QEvent::Show ) {
 			if( target == m_main_tool_bar ) {
 				m_action_show_tool_bar_main->setChecked( true );

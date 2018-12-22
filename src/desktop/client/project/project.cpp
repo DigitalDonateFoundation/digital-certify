@@ -96,6 +96,14 @@ namespace certify {
 		return "";
 	}
 
+	ProjectItem* Project_P::GetProject( std::string gcid ) {
+		auto it_pi = m_map_project.find( gcid );
+		if( it_pi != m_map_project.end() ) {
+			return it_pi->second;
+		}
+		return nullptr;
+	}
+
 	std::vector<ProjectItem*> Project_P::GetAllProject() {
 		return m_vec_project;
 	}
@@ -282,6 +290,10 @@ namespace certify {
 
 	Project* Project::GetInstance() {
 		return m_instance;
+	}
+
+	ProjectItem* Project::GetProject( std::string gcid ) {
+		return m_project_p->GetProject( gcid );
 	}
 
 	std::vector<ProjectItem*> Project::GetAllProject() {

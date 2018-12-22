@@ -27,6 +27,7 @@
 namespace certify {
 
 	struct UserData {
+		QString m_project_gcid;
 		QString m_project_name;
 		QString m_project_create_time;
 	};

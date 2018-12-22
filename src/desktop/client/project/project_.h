@@ -52,6 +52,7 @@ namespace certify {
 
 	public:
 		std::string GetGCID( bool upper_case = false );
+		ProjectItem* GetProject( std::string gcid );
 		std::vector<ProjectItem*> GetAllProject();
 		int32_t LoadExistProject( std::string dbf_path );
 		bool CanCreateProject( std::string name, std::string path );
@@ -61,7 +62,7 @@ namespace certify {
 		SQLite::Database* m_db_project;
 
 		std::vector<ProjectItem*> m_vec_project;
-		std::map<std::string, ProjectItem*> m_map_project;
+		std::map<std::string, ProjectItem*> m_map_project; // Ë÷ÒýÎª gcid
 		std::map<std::string, std::string> m_map_project_name;
 		std::map<std::string, std::string> m_map_project_path;
 

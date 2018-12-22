@@ -58,6 +58,7 @@ namespace certify {
 		static Project* GetInstance();
 
 	public:
+		ProjectItem* GetProject( std::string gcid );
 		std::vector<ProjectItem*> GetAllProject();
 		int32_t LoadExistProject( std::string dbf_path );
 		bool CanCreateProject( std::string name, std::string path );
