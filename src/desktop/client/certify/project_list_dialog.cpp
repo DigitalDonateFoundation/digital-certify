@@ -52,6 +52,7 @@ namespace certify {
 
 	void ProjectListDialog::InitInterface() {
 		setMaximumWidth( 250 );
+		setContentsMargins( -1, -1, -1, -1 );
 
 		QFont font_text;
 		font_text.setPointSize( 9 );
@@ -108,9 +109,9 @@ namespace certify {
 			ProjectItem* project_item = vec_project[i];
 			QStandardItem* item = new QStandardItem;
 			UserData user_data;
-			user_data.m_project_gcid = QString::fromLocal8Bit( project_item->GetGCID().c_str() );
-			user_data.m_project_name = QString::fromLocal8Bit( project_item->GetName().c_str() );
-			user_data.m_project_create_time = QString::fromLocal8Bit( project_item->GetCreateTime().c_str() );
+			user_data.m_project_gcid = project_item->GetGCID();
+			user_data.m_project_name = project_item->GetName();
+			user_data.m_project_create_time = project_item->GetCreateTime();
 			item->setData( DEF_PROJECT_STATUS_CREATE, DEF_USER_ROLE_PROJECT_STATUS ); // 单一存取
 			item->setData( QVariant::fromValue( user_data ), DEF_USER_ROLE_PROJECT_USERDATA ); // 整体存取
 			std::string tool_tip = "";
@@ -122,31 +123,14 @@ namespace certify {
 		return (int32_t)project_size;
 	}
 
-	void ProjectListDialog::SetCurrentProject( std::string gcid ) {
-		int32_t row_count = m_item_model->rowCount();
-		if( row_count > 0 ) { // 有列表项
-			for( size_t i = 0; i < row_count; ++i ) {
-				QStandardItem* item = m_item_model->item( i );
-				QModelIndex index = m_item_model->indexFromItem( item );
-				int32_t status = index.data( DEF_USER_ROLE_PROJECT_STATUS ).toInt();
-				UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
-				if( user_data.m_project_gcid.toStdString() == gcid ) {
-					m_list_view->setCurrentIndex( index );
-					QMessageBox::warning( this, QString::fromLocal8Bit( "测试" ), QString::fromLocal8Bit( gcid.c_str() ) );
-					break;
-				}
-			}
-		}
-	}
-
 	bool ProjectListDialog::CreateProject( std::string name, std::string path ) {
 		ProjectItem* project_item = m_project->CreateProject( name, path );
 		if( project_item != nullptr ) {
 			QStandardItem* item = new QStandardItem;
 			UserData user_data;
-			user_data.m_project_gcid = QString::fromLocal8Bit( project_item->GetGCID().c_str() );
-			user_data.m_project_name = QString::fromLocal8Bit( project_item->GetName().c_str() );
-			user_data.m_project_create_time = QString::fromLocal8Bit( project_item->GetCreateTime().c_str() );
+			user_data.m_project_gcid = project_item->GetGCID();
+			user_data.m_project_name = project_item->GetName();
+			user_data.m_project_create_time = project_item->GetCreateTime();
 			item->setData( DEF_PROJECT_STATUS_CREATE, DEF_USER_ROLE_PROJECT_STATUS ); // 单一存取
 			item->setData( QVariant::fromValue( user_data ), DEF_USER_ROLE_PROJECT_USERDATA ); // 整体存取
 			std::string tool_tip = "";
@@ -160,6 +144,25 @@ namespace certify {
 
 	bool ProjectListDialog::CanCreateProject( std::string name, std::string path ) {
 		return m_project->CanCreateProject( name, path );
+	}
+
+	void ProjectListDialog::SetCurrentProject( std::string gcid ) {
+		int32_t row_count = m_item_model->rowCount();
+		if( row_count > 0 ) { // 有列表项
+			for( size_t i = 0; i < row_count; ++i ) {
+				QModelIndex index = m_item_model->index( i, 0 );
+				m_list_view->selectionModel()->select( index, QItemSelectionModel::Deselect );
+			}
+			for( size_t i = 0; i < row_count; ++i ) {
+				QModelIndex index = m_item_model->index( i, 0 );
+				UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
+				if( user_data.m_project_gcid == gcid ) {
+					QModelIndex index_test = m_proxy_model->mapToSource( index );
+					m_list_view->setCurrentIndex( index_test ); // 消除之前选中状态滞留
+					m_list_view->selectionModel()->select( index, QItemSelectionModel::Select );
+				}
+			}
+		}
 	}
 
 	void ProjectListDialog::OnActionListText() {
@@ -228,9 +231,9 @@ namespace certify {
 	void ProjectListDialog::OnProjectListItemDoubleClicked( const QModelIndex& index ) {
 		int32_t status = index.data( DEF_USER_ROLE_PROJECT_STATUS ).toInt();
 		UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
-		ProjectListItemDoubleClickedEvent event_item( user_data.m_project_gcid.toStdString() );
+		ProjectListItemDoubleClickedEvent event_item( user_data.m_project_gcid );
 		QApplication::sendEvent( m_parent, &event_item );
-//		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString( "DoubleClicked: %1 %2 %3 %4" ).arg( index.row() ).arg( status ).arg( user_data.m_project_name ).arg( user_data.m_project_create_time ) );
+//		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString( "DoubleClicked: %1 %2 %3 %4" ).arg( index.row() ).arg( status ).arg( QString::fromLocal8Bit( user_data.m_project_name.c_str() ) ).arg( QString::fromLocal8Bit( user_data.m_project_create_time.c_str() ) ) );
 
 		// 在使用代理模型后，由于开启了动态排序模式，如果修改代理模型的数据，在第一个item修改数据后可能就不在当前过滤模型中，会被过滤掉，后面的item的QModelIndex就会变化，导致后续的修改失败。
 		// 有两个方法可处理，一是不修改代理模型而是直接修改源模型的数据，二是在修改模型数据的时候关闭代理模型的动态排序功能修改完再开启。

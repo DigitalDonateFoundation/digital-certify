@@ -55,9 +55,9 @@ namespace certify {
 
 	public:
 		int32_t LoadExistProject();
-		void SetCurrentProject( std::string gcid );
 		bool CreateProject( std::string name, std::string path );
 		bool CanCreateProject( std::string name, std::string path );
+		void SetCurrentProject( std::string gcid );
 
 	public slots:
 		void OnActionNewProject();

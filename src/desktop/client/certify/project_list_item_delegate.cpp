@@ -92,11 +92,11 @@ namespace certify {
 
 			painter->setPen( QPen( Qt::black ) );
 			painter->setFont( QFont( "Times", 11, QFont::Bold ) );
-			painter->drawText( rect_name, Qt::AlignLeft, user_data.m_project_name ); // 绘制名字
+			painter->drawText( rect_name, Qt::AlignLeft, QString::fromLocal8Bit( user_data.m_project_name.c_str() ) ); // 绘制名字
 
 			painter->setPen( QPen( Qt::gray ) );
 			painter->setFont( QFont( "Times", 9 ) );
-			painter->drawText( rect_create_time, Qt::AlignLeft, user_data.m_project_create_time ); // 绘制创建时间
+			painter->drawText( rect_create_time, Qt::AlignLeft, QString::fromLocal8Bit( user_data.m_project_create_time.c_str() ) ); // 绘制创建时间
 
 			painter->restore();
 		}

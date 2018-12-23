@@ -609,9 +609,13 @@ namespace certify {
 	}
 
 	void MainWindow::OnSelectProjectLabel( QMdiSubWindow* mdi_sub_window ) {
-		ProjectDialog* project_dialog = qobject_cast<ProjectDialog*>( mdi_sub_window->widget() );
-		m_project_list_dialog->SetCurrentProject( project_dialog->m_project_gcid );
-		//QMessageBox::question( this, QString::fromLocal8Bit( "测试" ), QString::fromLocal8Bit( project_dialog->m_project_gcid.c_str() ) );
+		if( mdi_sub_window != nullptr ) {
+			ProjectDialog* project_dialog = qobject_cast<ProjectDialog*>( mdi_sub_window->widget() );
+			m_project_list_dialog->SetCurrentProject( project_dialog->m_project_gcid );
+		}
+		else { // 可能已被关闭删除
+			m_project_list_dialog->SetCurrentProject( "" ); // 全不选
+		}
 	}
 
 	void MainWindow::closeEvent( QCloseEvent* event ) {

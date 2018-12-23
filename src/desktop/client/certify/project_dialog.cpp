@@ -37,6 +37,7 @@ namespace certify {
 		setFont( font_text );
 
 		setAttribute( Qt::WA_DeleteOnClose ); // 将在点击 MdiSubWindow 的 Close 按钮时删除 MdiSubWindow 和所含 Widget 对象
+		setContentsMargins( -1, -1, -1, -1 );
 		setWindowTitle( QString::fromLocal8Bit( m_project_item->GetName().c_str() ) );
 
 		m_text_edit = new QTextEdit( this );

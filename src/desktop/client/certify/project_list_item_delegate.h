@@ -27,9 +27,9 @@
 namespace certify {
 
 	struct UserData {
-		QString m_project_gcid;
-		QString m_project_name;
-		QString m_project_create_time;
+		std::string m_project_gcid;
+		std::string m_project_name;
+		std::string m_project_create_time;
 	};
 
 	Q_DECLARE_METATYPE( UserData )
