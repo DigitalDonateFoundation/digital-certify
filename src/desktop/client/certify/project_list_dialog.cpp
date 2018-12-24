@@ -22,7 +22,6 @@ namespace certify {
 	, m_parent( parent )
 	, m_list_view( nullptr )
 	, m_item_model( nullptr )
-	, m_proxy_model( nullptr )
 	, m_menu_list( nullptr )
 	, m_action_new_project( nullptr )
 	, m_action_list_text( nullptr )
@@ -72,12 +71,11 @@ namespace certify {
 		m_list_view->setViewMode( QListView::ListMode ); // 设置显示模式
 		m_list_view->setDragEnabled( false ); // 不允许拖动
 		//m_list_view->setToolTip( QString::fromLocal8Bit( "123" ) );
+		m_list_view->setAutoScroll( true );
+		m_list_view->setHorizontalScrollBarPolicy( Qt::ScrollBarAsNeeded );
+		m_list_view->setVerticalScrollBarPolicy( Qt::ScrollBarAsNeeded );
 		m_item_model = new QStandardItemModel();
-		m_proxy_model = new QSortFilterProxyModel( m_list_view );
-		m_proxy_model->setSourceModel( m_item_model );
-		m_proxy_model->setFilterRole( DEF_USER_ROLE_PROJECT_STATUS );
-		m_proxy_model->setDynamicSortFilter( true );
-		m_list_view->setModel( m_proxy_model );
+		m_list_view->setModel( m_item_model );
 		
 		m_menu_list = nullptr; // 菜单选项根据是否选中由 OnShowListMenu() 进行动态显示
 
@@ -93,7 +91,8 @@ namespace certify {
 		// 列表菜单选项 m_action_new_project 根据是否选中由 OnShowListMenu() 进行动态显示
 		// 列表菜单选项 m_action_list_text 根据是否选中由 OnShowListMenu() 进行动态显示
 		QObject::connect( m_list_view, SIGNAL( customContextMenuRequested( const QPoint& ) ), this, SLOT( OnShowListMenu( const QPoint& ) ) ); // 需要 setContextMenuPolicy( Qt::CustomContextMenu ) 列表
-		QObject::connect( m_list_view, SIGNAL( doubleClicked( const QModelIndex& ) ), this, SLOT( OnProjectListItemDoubleClicked( const QModelIndex& ) ) ); // 单击会与此冲突
+		QObject::connect( m_list_view, SIGNAL( clicked( const QModelIndex& ) ), this, SLOT( OnProjectListViewClicked( const QModelIndex& ) ) ); // 单击列表空白处不会触发
+		QObject::connect( m_list_view, SIGNAL( doubleClicked( const QModelIndex& ) ), this, SLOT( OnProjectListItemDoubleClicked( const QModelIndex& ) ) ); // 双击列表空白处不会触发 // 单击可能会与此冲突
 	}
 
 	int32_t ProjectListDialog::LoadExistProject() {
@@ -146,20 +145,16 @@ namespace certify {
 		return m_project->CanCreateProject( name, path );
 	}
 
-	void ProjectListDialog::SetCurrentProject( std::string gcid ) {
+	void ProjectListDialog::SetCurrentProject( std::string gcid ) { // 使用 QSortFilterProxyModel 会导致 setCurrentIndex、scrollTo 失效
 		int32_t row_count = m_item_model->rowCount();
 		if( row_count > 0 ) { // 有列表项
-			for( size_t i = 0; i < row_count; ++i ) {
-				QModelIndex index = m_item_model->index( i, 0 );
-				m_list_view->selectionModel()->select( index, QItemSelectionModel::Deselect );
-			}
-			for( size_t i = 0; i < row_count; ++i ) {
+			for( int32_t i = 0; i < row_count; ++i ) {
 				QModelIndex index = m_item_model->index( i, 0 );
 				UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
 				if( user_data.m_project_gcid == gcid ) {
-					QModelIndex index_test = m_proxy_model->mapToSource( index );
-					m_list_view->setCurrentIndex( index_test ); // 消除之前选中状态滞留
-					m_list_view->selectionModel()->select( index, QItemSelectionModel::Select );
+					//m_list_view->selectionModel()->select( index, QItemSelectionModel::Select );
+					m_list_view->setCurrentIndex( index );
+					m_list_view->scrollTo( index );
 				}
 			}
 		}
@@ -167,8 +162,6 @@ namespace certify {
 
 	void ProjectListDialog::OnActionListText() {
 		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString::fromLocal8Bit( "Text" ) );
-
-//		m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_MODIFY ) ); // 测试：仅显示黄色项 // setFilterFixedString( QString() ) 还原
 	}
 
 	void ProjectListDialog::OnActionNewProject() {
@@ -207,15 +200,11 @@ namespace certify {
 			m_action_list_text = m_menu_list->addAction( QString::fromLocal8Bit( "选中" ) );
 			m_action_list_text->setIcon( QIcon( ":/certify/resource/certify.ico" ) );
 			QObject::connect( m_action_list_text, SIGNAL( triggered() ), this, SLOT( OnActionListText() ) );
-
-//			m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_ERRORS ) ); // 测试：仅显示红色项 // setFilterFixedString( QString() ) 还原
 		}
 		else { // 未选中
 			m_action_new_project = m_menu_list->addAction( QString::fromLocal8Bit( "新建" ) );
 			m_action_new_project->setIcon( QIcon( ":/certify/resource/action_new_project.ico" ) );
 			QObject::connect( m_action_new_project, SIGNAL( triggered() ), this, SLOT( OnActionNewProject() ) );
-
-//			m_proxy_model->setFilterFixedString( QString::number( DEF_PROJECT_STATUS_COMMIT ) ); // 测试：仅显示绿色项 // setFilterFixedString( QString() ) 还原
 		}
 
 		int32_t row_count = m_item_model->rowCount();
@@ -228,19 +217,24 @@ namespace certify {
 		m_menu_list->exec( QCursor::pos() );
 	}
 
+	void ProjectListDialog::OnProjectListViewClicked( const QModelIndex& index ) {
+		QModelIndexList list_model_index = m_list_view->selectionModel()->selectedIndexes(); // 单行或多行
+		if( list_model_index.size() > 0 ) { // 选中行
+			for( int32_t i = 0; i < list_model_index.size(); ++i ) { // 只有一个
+				QModelIndex index = list_model_index[i];
+				UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
+				ProjectListItemClickedEvent event_item( user_data.m_project_gcid );
+				QApplication::sendEvent( m_parent, &event_item );
+			}
+		}
+	}
+
 	void ProjectListDialog::OnProjectListItemDoubleClicked( const QModelIndex& index ) {
 		int32_t status = index.data( DEF_USER_ROLE_PROJECT_STATUS ).toInt();
 		UserData user_data = index.data( DEF_USER_ROLE_PROJECT_USERDATA ).value<UserData>();
 		ProjectListItemDoubleClickedEvent event_item( user_data.m_project_gcid );
 		QApplication::sendEvent( m_parent, &event_item );
-//		QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString( "DoubleClicked: %1 %2 %3 %4" ).arg( index.row() ).arg( status ).arg( QString::fromLocal8Bit( user_data.m_project_name.c_str() ) ).arg( QString::fromLocal8Bit( user_data.m_project_create_time.c_str() ) ) );
-
-		// 在使用代理模型后，由于开启了动态排序模式，如果修改代理模型的数据，在第一个item修改数据后可能就不在当前过滤模型中，会被过滤掉，后面的item的QModelIndex就会变化，导致后续的修改失败。
-		// 有两个方法可处理，一是不修改代理模型而是直接修改源模型的数据，二是在修改模型数据的时候关闭代理模型的动态排序功能修改完再开启。
-		// m_proxy_model->setDynamicSortFilter( false );
-		// m_proxy_model->setDynamicSortFilter( true );
-//		QModelIndex index_test = m_proxy_model->mapToSource( index ); // 必须先获取 源 Model 的 ModelIndex
-//		m_item_model->setData( index_test, DEF_PROJECT_STATUS_ERRORS, DEF_USER_ROLE_PROJECT_STATUS ); // 测试：变成红色
+		//QMessageBox::information( this, QString::fromLocal8Bit( "提示" ), QString( "DoubleClicked: %1 %2 %3 %4" ).arg( index.row() ).arg( status ).arg( QString::fromLocal8Bit( user_data.m_project_name.c_str() ) ).arg( QString::fromLocal8Bit( user_data.m_project_create_time.c_str() ) ) );
 	}
 
 } // namespace certify

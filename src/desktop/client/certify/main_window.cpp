@@ -627,7 +627,20 @@ namespace certify {
 	}
 
 	bool MainWindow::eventFilter( QObject* target, QEvent* event ) {
-		if( event->type() == ProjectListItemDoubleClickedEvent::m_type ) {
+		if( event->type() == ProjectListItemClickedEvent::m_type ) { // 单击，已打开的选中，未打开的不管
+			ProjectListItemClickedEvent* event_item = dynamic_cast<ProjectListItemClickedEvent*>( event );
+			std::string project_gcid = event_item->m_gcid;
+			QList<QMdiSubWindow*> list_mdi_window = m_mdi_area->subWindowList();
+			for( int32_t i = 0; i < list_mdi_window.size(); ++i ) {
+				QMdiSubWindow* mdi_sub_window = list_mdi_window.at( i );
+				ProjectDialog* project_dialog = qobject_cast<ProjectDialog*>( mdi_sub_window->widget() );
+				if( project_dialog->m_project_gcid == project_gcid ) {
+					m_mdi_area->setActiveSubWindow( mdi_sub_window );
+					break;
+				}
+			}
+		}
+		else if( event->type() == ProjectListItemDoubleClickedEvent::m_type ) { // 双击，已打开的选中，未打开的创建
 			ProjectListItemDoubleClickedEvent* event_item = dynamic_cast<ProjectListItemDoubleClickedEvent*>( event );
 			std::string project_gcid = event_item->m_gcid;
 			bool is_mdi_sub_window_exist = false;
@@ -663,7 +676,7 @@ namespace certify {
 			//Signals
 			//	void subWindowActivated( QMdiSubWindow* window ) // 切换激活的窗口时发出
 		}
-		if( event->type() == QEvent::Show ) {
+		else if( event->type() == QEvent::Show ) {
 			if( target == m_main_tool_bar ) {
 				m_action_show_tool_bar_main->setChecked( true );
 			}
@@ -680,7 +693,7 @@ namespace certify {
 				m_action_show_dock_3->setChecked( true );
 			}
 		}
-		if( event->type() == QEvent::Close ) {
+		else if( event->type() == QEvent::Close ) {
 			if( target == m_main_tool_bar ) {
 				m_action_show_tool_bar_main->setChecked( false );
 			}

@@ -13,7 +13,6 @@
 #define CERTIFY_CERTIFY_PROJECT_LIST_DIALOG_H
 
 #include <QtCore/QEvent>
-#include <QtCore/QSortFilterProxyModel>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QDialog>
@@ -28,6 +27,24 @@
 
 namespace certify {
 
+    #define QEVENT_PROJECT_LIST_ITEM_CLICKED QEvent::User + 1
+    #define QEVENT_PROJECT_LIST_ITEM_DOUBLE_CLICKED QEvent::User + 2
+
+	class ProjectListItemClickedEvent : public QEvent {
+	public:
+		ProjectListItemClickedEvent( std::string gcid )
+			: QEvent( m_type )
+			, m_gcid( gcid ) {
+		}
+
+		~ProjectListItemClickedEvent() {
+		}
+
+	public:
+		std::string m_gcid;
+		const static QEvent::Type m_type = static_cast<QEvent::Type>( QEVENT_PROJECT_LIST_ITEM_CLICKED );
+	};
+
 	class ProjectListItemDoubleClickedEvent : public QEvent {
 	public:
 		ProjectListItemDoubleClickedEvent( std::string gcid )
@@ -40,7 +57,7 @@ namespace certify {
 
 	public:
 		std::string m_gcid;
-		const static QEvent::Type m_type = static_cast<QEvent::Type>( QEvent::User + 1 );
+		const static QEvent::Type m_type = static_cast<QEvent::Type>( QEVENT_PROJECT_LIST_ITEM_DOUBLE_CLICKED );
 	};
 
 	class ProjectListDialog : public QDialog {
@@ -65,13 +82,13 @@ namespace certify {
 	private slots:
 		void OnActionListText();
 		void OnShowListMenu( const QPoint& point );
+		void OnProjectListViewClicked( const QModelIndex& index );
 		void OnProjectListItemDoubleClicked( const QModelIndex& index );
 
 	private:
 		QWidget* m_parent;
 		QListView* m_list_view;
 		QStandardItemModel* m_item_model;
-		QSortFilterProxyModel* m_proxy_model;
 		QMenu* m_menu_list;
 		QAction* m_action_new_project;
 		QAction* m_action_list_text;
