@@ -9,5 +9,7 @@
         <file>resource/action_auto_start.ico</file>
         <file>resource/action_show_tool.ico</file>
         <file>resource/action_show_dock.ico</file>
+        <file>resource/archive_his.ico</file>
+        <file>resource/archive_new.ico</file>
     </qresource>
 </RCC>

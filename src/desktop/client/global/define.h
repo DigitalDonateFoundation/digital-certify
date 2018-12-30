@@ -15,7 +15,7 @@
 // 软件信息
 #define THE_APP_NAME "Certify" // 系统英文名称
 #define THE_APP_NAME_CN "数 字 认 证 客 户 端" // 系统中文名称
-#define THE_APP_VERSION "V0.1.0-Beta Build 20181224" // 系统版本号
+#define THE_APP_VERSION "V0.1.0-Beta Build 20181230" // 系统版本号
 #define THE_APP_DEVELOPER "Developed by the D.D.F." // 开发者声明
 #define THE_APP_COMPANY "Digital Donate Foundation" // 公司声明
 #define THE_APP_COPYRIGHT "Copyright 2018-2019 D.D.F. All Rights Reserved." // 版权声明

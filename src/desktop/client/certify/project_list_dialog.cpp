@@ -50,6 +50,7 @@ namespace certify {
 	}
 
 	void ProjectListDialog::InitInterface() {
+		setMinimumWidth( 200 );
 		setMaximumWidth( 250 );
 		setContentsMargins( -1, -1, -1, -1 );
 
@@ -65,7 +66,7 @@ namespace certify {
 		//m_list_view->setEditTriggers( QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked ); // 双击或选中单击时显示编辑框
 		m_list_view->setEditTriggers( QAbstractItemView::NoEditTriggers ); // 禁用编辑，这样双击才会触发
 		m_list_view->setSelectionBehavior( QAbstractItemView::SelectRows ); // 选中整行 // SelectRows、MultiSelection
-		m_list_view->setSelectionMode( QAbstractItemView::ExtendedSelection ); // 选择方式
+		m_list_view->setSelectionMode( QAbstractItemView::SingleSelection ); // 选择方式 // SingleSelection 和 ExtendedSelection 模式会影响选中项焦点进而影响弹出菜单和列表项绘制
 		m_list_view->setContextMenuPolicy( Qt::CustomContextMenu ); // 右键菜单
 		//m_list_view->setAlternatingRowColors( true ); // 奇偶行背景色
 		m_list_view->setViewMode( QListView::ListMode ); // 设置显示模式
@@ -91,7 +92,7 @@ namespace certify {
 		// 列表菜单选项 m_action_new_project 根据是否选中由 OnShowListMenu() 进行动态显示
 		// 列表菜单选项 m_action_list_text 根据是否选中由 OnShowListMenu() 进行动态显示
 		QObject::connect( m_list_view, SIGNAL( customContextMenuRequested( const QPoint& ) ), this, SLOT( OnShowListMenu( const QPoint& ) ) ); // 需要 setContextMenuPolicy( Qt::CustomContextMenu ) 列表
-		QObject::connect( m_list_view, SIGNAL( clicked( const QModelIndex& ) ), this, SLOT( OnProjectListViewClicked( const QModelIndex& ) ) ); // 单击列表空白处不会触发
+		QObject::connect( m_list_view, SIGNAL( clicked( const QModelIndex& ) ), this, SLOT( OnProjectListItemClicked( const QModelIndex& ) ) ); // 单击列表空白处不会触发
 		QObject::connect( m_list_view, SIGNAL( doubleClicked( const QModelIndex& ) ), this, SLOT( OnProjectListItemDoubleClicked( const QModelIndex& ) ) ); // 双击列表空白处不会触发 // 单击可能会与此冲突
 	}
 
@@ -195,8 +196,9 @@ namespace certify {
 
 		m_menu_list = new QMenu( m_list_view );
 
-		QModelIndexList list_model_index = m_list_view->selectionModel()->selectedIndexes(); // 单行或多行
-		if( list_model_index.size() > 0 ) { // 选中行
+		// setSelectionMode 为 ExtendedSelection 时用 QModelIndexList list_model_index = m_list_view->selectionModel()->selectedIndexes();
+		QModelIndex index = m_list_view->indexAt( point );
+		if( index.row() >= 0 ) { // 选中行 // if( list_model_index.size() > 0 )
 			m_action_list_text = m_menu_list->addAction( QString::fromLocal8Bit( "选中" ) );
 			m_action_list_text->setIcon( QIcon( ":/certify/resource/certify.ico" ) );
 			QObject::connect( m_action_list_text, SIGNAL( triggered() ), this, SLOT( OnActionListText() ) );
@@ -217,7 +219,7 @@ namespace certify {
 		m_menu_list->exec( QCursor::pos() );
 	}
 
-	void ProjectListDialog::OnProjectListViewClicked( const QModelIndex& index ) {
+	void ProjectListDialog::OnProjectListItemClicked( const QModelIndex& index ) {
 		QModelIndexList list_model_index = m_list_view->selectionModel()->selectedIndexes(); // 单行或多行
 		if( list_model_index.size() > 0 ) { // 选中行
 			for( int32_t i = 0; i < list_model_index.size(); ++i ) { // 只有一个

@@ -82,7 +82,7 @@ namespace certify {
 	private slots:
 		void OnActionListText();
 		void OnShowListMenu( const QPoint& point );
-		void OnProjectListViewClicked( const QModelIndex& index );
+		void OnProjectListItemClicked( const QModelIndex& index );
 		void OnProjectListItemDoubleClicked( const QModelIndex& index );
 
 	private:
