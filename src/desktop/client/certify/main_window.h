@@ -19,6 +19,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QDateTime>
 #include <QtCore/QSettings>
+#include <QtCore/QTranslator>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QAction>
@@ -54,6 +55,7 @@ namespace certify {
 	public:
 		void CreateActions();
 		void InitInterface();
+		void ReTranslateUI();
 		void ReadSettings();
 		void WriteSettings();
 		void RemoveSettings( std::string key );
@@ -80,6 +82,8 @@ namespace certify {
 		void ShowDockWidget_1( bool show );
 		void ShowDockWidget_2( bool show );
 		void ShowDockWidget_3( bool show );
+		void ChooseLanguageEnglish( bool choose );
+		void ChooseLanguageChinese( bool choose );
 		void OnActionSaveLayout( bool save );
 		void OnSelectProjectLabel( QMdiSubWindow* mdi_sub_window );
 
@@ -108,6 +112,8 @@ namespace certify {
 		QAction* m_action_show_dock_1;
 		QAction* m_action_show_dock_2;
 		QAction* m_action_show_dock_3;
+		QAction* m_action_lang_english;
+		QAction* m_action_lang_chinese;
 		
 		QMenuBar* m_menu_bar;
 		QMenu* m_menu_file;
@@ -115,11 +121,13 @@ namespace certify {
 		QMenu* m_menu_view;
 		QMenu* m_menu_view_tooler;
 		QMenu* m_menu_view_docker;
+		QMenu* m_menu_view_langts;
 		QMenu* m_menu_help;
 		QToolBar* m_main_tool_bar;
 		QStatusBar* m_status_bar;
 
 		QMdiArea* m_mdi_area;
+		QTranslator m_translator;
 
 		QLabel* m_label_logo;
 		QLabel* m_label_info;

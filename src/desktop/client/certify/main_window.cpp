@@ -42,12 +42,15 @@ namespace certify {
 	, m_action_show_dock_1( nullptr )
 	, m_action_show_dock_2( nullptr )
 	, m_action_show_dock_3( nullptr )
+	, m_action_lang_english( nullptr )
+	, m_action_lang_chinese( nullptr )
 	, m_menu_bar( nullptr )
 	, m_menu_file( nullptr )
 	, m_menu_tool( nullptr )
 	, m_menu_view( nullptr )
 	, m_menu_view_tooler( nullptr )
 	, m_menu_view_docker( nullptr )
+	, m_menu_view_langts( nullptr )
 	, m_menu_help( nullptr )
 	, m_main_tool_bar( nullptr )
 	, m_status_bar( nullptr )
@@ -130,6 +133,14 @@ namespace certify {
 		m_action_show_dock_3 = new QAction( this );
 		m_action_show_dock_3->setText( QString::fromLocal8Bit( "窗口-03" ) );
 		m_action_show_dock_3->setCheckable( true );
+
+		m_action_lang_english = new QAction( this );
+		m_action_lang_english->setText( tr( "English" ) );
+		m_action_lang_english->setCheckable( true );
+
+		m_action_lang_chinese = new QAction( this );
+		m_action_lang_chinese->setText( tr( "Chinses" ) );
+		m_action_lang_chinese->setCheckable( true );
 	}
 
 	void MainWindow::InitInterface() {
@@ -174,6 +185,10 @@ namespace certify {
 		m_menu_view_docker->addAction( m_action_show_dock_1 );
 		m_menu_view_docker->addAction( m_action_show_dock_2 );
 		m_menu_view_docker->addAction( m_action_show_dock_3 );
+		m_menu_view_langts = m_menu_view->addMenu( QString::fromLocal8Bit( "语言类(&L)" ) );
+		m_menu_view_langts->setIcon( QIcon( ":/certify/resource/action_show_lang.ico" ) );
+		m_menu_view_langts->addAction( m_action_lang_english );
+		m_menu_view_langts->addAction( m_action_lang_chinese );
 		m_menu_view->addAction( m_action_save_layout );
 		m_menu_view->addAction( m_action_auto_start );
 		m_menu_view->setTitle( QString::fromLocal8Bit( "视图(&V)" ) );
@@ -286,6 +301,8 @@ namespace certify {
 		m_action_show_dock_1->setChecked( true );
 		m_action_show_dock_2->setChecked( true );
 		m_action_show_dock_3->setChecked( true );
+		m_action_lang_english->setChecked( true );
+		m_action_lang_chinese->setChecked( false );
 		m_action_save_layout->setChecked( true );
 		m_action_auto_start->setChecked( false );
 
@@ -300,11 +317,18 @@ namespace certify {
 		QObject::connect( m_action_show_dock_1, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_1( bool ) ) );
 		QObject::connect( m_action_show_dock_2, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_2( bool ) ) );
 		QObject::connect( m_action_show_dock_3, SIGNAL( triggered( bool ) ), this, SLOT( ShowDockWidget_3( bool ) ) );
+		QObject::connect( m_action_lang_english, SIGNAL( triggered( bool ) ), this, SLOT( ChooseLanguageEnglish( bool ) ) );
+		QObject::connect( m_action_lang_chinese, SIGNAL( triggered( bool ) ), this, SLOT( ChooseLanguageChinese( bool ) ) );
 		QObject::connect( m_action_save_layout, SIGNAL( triggered( bool ) ), this, SLOT( OnActionSaveLayout( bool ) ) );
 		QObject::connect( m_action_auto_start, SIGNAL( triggered( bool ) ), this, SLOT( OnActionAutoStart( bool ) ) );
 		QObject::connect( m_mdi_area, SIGNAL( subWindowActivated( QMdiSubWindow* ) ), this, SLOT( OnSelectProjectLabel( QMdiSubWindow* ) ) );
 
 		m_project_list_dialog->LoadExistProject();
+	}
+
+	void MainWindow::ReTranslateUI() {
+		m_action_lang_english->setText( tr( "English" ) );
+		m_action_lang_chinese->setText( tr( "Chinses" ) );
 	}
 
 	// QDockWidget 和 QToolBar 都需设置对象名，这样才能 saveState() 和 restoreState() 状态、位置、大小等
@@ -328,9 +352,13 @@ namespace certify {
 			m_action_show_dock_1->setChecked( settings.value( "ActionShowDock_1" ).toBool() );
 			m_action_show_dock_2->setChecked( settings.value( "ActionShowDock_2" ).toBool() );
 			m_action_show_dock_3->setChecked( settings.value( "ActionShowDock_3" ).toBool() );
-			
+			m_action_lang_english->setChecked( settings.value( "ChooseLanguageEnglish" ).toBool() );
+			m_action_lang_chinese->setChecked( settings.value( "ChooseLanguageChinese" ).toBool() );
 			m_action_save_layout->setChecked( settings.value( "ActionSaveLayout" ).toBool() );
 			m_action_auto_start->setChecked( settings.value( "ActionAutoStart" ).toBool() );
+
+			ChooseLanguageEnglish( settings.value( "ChooseLanguageEnglish" ).toBool() );
+			ChooseLanguageChinese( settings.value( "ChooseLanguageChinese" ).toBool() );
 
 			settings.endGroup();
 
@@ -357,7 +385,8 @@ namespace certify {
 			settings.setValue( "ActionShowDock_1", m_action_show_dock_1->isChecked() );
 			settings.setValue( "ActionShowDock_2", m_action_show_dock_2->isChecked() );
 			settings.setValue( "ActionShowDock_3", m_action_show_dock_3->isChecked() );
-			
+			settings.setValue( "ChooseLanguageEnglish", m_action_lang_english->isChecked() );
+			settings.setValue( "ChooseLanguageChinese", m_action_lang_chinese->isChecked() );
 			settings.setValue( "ActionSaveLayout", m_action_save_layout->isChecked() );
 			settings.setValue( "ActionAutoStart", m_action_auto_start->isChecked() );
 
@@ -380,7 +409,8 @@ namespace certify {
 			settings.setValue( "ActionShowDock_1", settings.value( "ActionShowDock_1" ).toBool() );
 			settings.setValue( "ActionShowDock_2", settings.value( "ActionShowDock_2" ).toBool() );
 			settings.setValue( "ActionShowDock_3", settings.value( "ActionShowDock_3" ).toBool() );
-			
+			settings.setValue( "ChooseLanguageEnglish", settings.value( "ChooseLanguageEnglish" ).toBool() );
+			settings.setValue( "ChooseLanguageChinese", settings.value( "ChooseLanguageChinese" ).toBool() );
 			settings.setValue( "ActionSaveLayout", m_action_save_layout->isChecked() ); // 只有这个保存现值，其他均保存原值
 			settings.setValue( "ActionAutoStart", settings.value( "ActionAutoStart" ).toBool() );
 
@@ -566,6 +596,28 @@ namespace certify {
 		}
 		else {
 			m_dock_widget_3->hide();
+		}
+	}
+
+	void MainWindow::ChooseLanguageEnglish( bool choose ) {
+		m_action_lang_english->setChecked( choose );
+		m_action_lang_chinese->setChecked( !choose );
+		if( true == choose ) {
+			QApplication::removeTranslator( &m_translator );
+			m_translator.load( "" );
+			QApplication::installTranslator( &m_translator );
+			ReTranslateUI();
+		}
+	}
+
+	void MainWindow::ChooseLanguageChinese( bool choose ) {
+		m_action_lang_english->setChecked( !choose );
+		m_action_lang_chinese->setChecked( choose );
+		if( true == choose ) {
+			QApplication::removeTranslator( &m_translator );
+			m_translator.load( "./tslangs/certify_cn.qm" );
+			QApplication::installTranslator( &m_translator );
+			ReTranslateUI();
 		}
 	}
 
