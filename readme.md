@@ -7,4 +7,4 @@ V0.1.0-Beta Build 20190101
 Digital Rights Certification
 
 ### Contact Information
-QQ: 277195007, WeChat: ustc_xrd, E-mail: xrd@ustc.edu
+QQ: 277195007, WeChat: ustc_xrd, E-mail: github@digitaldonate.com
