@@ -1,4 +1,4 @@
-# Digital Certify
+# Certification
 V0.1.0-Beta Build 20190101
 
 © 2018-2019 Xu Rendong. All Rights Reserved.
@@ -7,4 +7,4 @@ V0.1.0-Beta Build 20190101
 Digital Rights Certification
 
 ### Contact Information
-QQ: 277195007, WeChat: ustc_xrd, E-mail: github@digitaldonate.com
+QQ: 277195007, WeChat: ustc_xrd, E-mail: github@digitalcharity.org
